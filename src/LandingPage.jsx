@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import logoImage from "./images/logo.png";
 
 const NAV_LINKS = ["Sobre", "Metodologia", "Impacto", "Contacto"];
@@ -50,11 +52,18 @@ function Logo() {
 function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
+  
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <nav style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
@@ -65,7 +74,9 @@ function NavBar() {
       padding: "0 5vw",
     }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68 }}>
-        <Logo />
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <Logo />
+        </Link>
         <div style={{ display: "flex", gap: 36, alignItems: "center" }}>
           {NAV_LINKS.map(l => (
             <a key={l} href={`#${l.toLowerCase()}`} style={{
@@ -78,16 +89,42 @@ function NavBar() {
             >{l}</a>
           ))}
           
-          <a href="/login" style={{
-            background: "#E8633A", color: "#fff", padding: "10px 22px",
-            borderRadius: 100, fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-            fontWeight: 600, textDecoration: "none", letterSpacing: "0.02em",
-            transition: "transform 0.2s, box-shadow 0.2s",
-            boxShadow: "0 4px 18px rgba(232,99,58,0.3)",
-          }}
-            onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 8px 24px rgba(232,99,58,0.4)"; }}
-            onMouseLeave={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 4px 18px rgba(232,99,58,0.3)"; }}
-          >Entrar</a>
+          {user ? (
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <Link to="/dashboard" style={{
+                background: "#667eea", color: "#fff", padding: "10px 22px",
+                borderRadius: 100, fontFamily: "'DM Sans', sans-serif", fontSize: 14,
+                fontWeight: 600, textDecoration: "none", letterSpacing: "0.02em",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                boxShadow: "0 4px 18px rgba(102,126,234,0.3)",
+              }}
+                onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 8px 24px rgba(102,126,234,0.4)"; }}
+                onMouseLeave={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 4px 18px rgba(102,126,234,0.3)"; }}
+              >Dashboard</Link>
+              <button onClick={handleLogout} style={{
+                background: "transparent", color: "#E8633A", padding: "10px 22px",
+                border: "1px solid #E8633A", borderRadius: 100, fontFamily: "'DM Sans', sans-serif", fontSize: 14,
+                fontWeight: 600, cursor: "pointer", letterSpacing: "0.02em",
+                transition: "all 0.2s",
+              }}
+                onMouseEnter={e => { e.target.style.background = "#E8633A"; e.target.style.color = "#fff"; }}
+                onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.color = "#E8633A"; }}
+              >Sair</button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 12 }}>
+              <Link to="/login" style={{
+                background: "#E8633A", color: "#fff", padding: "10px 22px",
+                borderRadius: 100, fontFamily: "'DM Sans', sans-serif", fontSize: 14,
+                fontWeight: 600, textDecoration: "none", letterSpacing: "0.02em",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                boxShadow: "0 4px 18px rgba(232,99,58,0.3)",
+              }}
+                onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 8px 24px rgba(232,99,58,0.4)"; }}
+                onMouseLeave={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 4px 18px rgba(232,99,58,0.3)"; }}
+              >Entrar</Link>
+            </div>
+          )}
         </div>
       </div>
     </nav>
