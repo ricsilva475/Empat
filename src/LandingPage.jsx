@@ -100,7 +100,7 @@ function NavBar() {
               }}
                 onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 8px 24px rgba(102,126,234,0.4)"; }}
                 onMouseLeave={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 4px 18px rgba(102,126,234,0.3)"; }}
-              >Dashboard</Link>
+              >Perfil</Link>
               <button onClick={handleLogout} style={{
                 background: "transparent", color: "#E8633A", padding: "10px 22px",
                 border: "1px solid #E8633A", borderRadius: 100, fontFamily: "'DM Sans', sans-serif", fontSize: 14,

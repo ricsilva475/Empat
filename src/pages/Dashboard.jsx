@@ -25,10 +25,7 @@ export default function Dashboard() {
 
       <div className="dashboard-content">
         <div className="welcome-box">
-          <h1>Bem-vindo! 👋</h1>
-          <p>Estás autenticado como:</p>
-          <p className="user-info">{user?.email}</p>
-          
+          <h1>Bem-vindo! 👋</h1>          
           <div className="user-details">
             <h2>Informações da Conta</h2>
             <div className="detail-item">
@@ -36,8 +33,8 @@ export default function Dashboard() {
               <span className="value">{user?.email}</span>
             </div>
             <div className="detail-item">
-              <span className="label">ID do Utilizador:</span>
-              <span className="value">{user?.id}</span>
+              <span className="label">Nome do utilizador:</span>
+              <span className="value">{user?.user_metadata?.full_name || ''}</span>
             </div>
             <div className="detail-item">
               <span className="label">Última autenticação:</span>
