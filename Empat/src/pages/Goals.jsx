@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { SOFT_SKILLS, SKILL_MAP } from "../constants";
+import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { Plus, Trash2, Target } from "lucide-react";
 import { toast } from "sooner";
 

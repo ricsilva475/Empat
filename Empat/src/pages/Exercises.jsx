@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../constants";
+import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../js/constants";
 import { Clock, Target } from "lucide-react";
 
 export default function Exercises() {

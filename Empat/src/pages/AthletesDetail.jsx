@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { SOFT_SKILLS, SKILL_MAP } from "../constants";
+import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { toast } from "sooner";

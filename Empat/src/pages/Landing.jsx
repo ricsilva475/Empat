@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { LOGO_URL, SOFT_SKILLS, HERO_IMG, FEATURE_AI, FEATURE_EX } from "../constants";
+import { LOGO_URL, SOFT_SKILLS, HERO_IMG, FEATURE_AI, FEATURE_EX } from "../js/constants";
 import { Sparkles, ClipboardList, Dumbbell, NotebookPen, Target, CalendarDays, ArrowRight, Brain, Eye, BarChart3, Heart, MessageCircle, Shield, Crown } from "lucide-react";
 
 const skillIcons = { empatia: Heart, comunicacao: MessageCircle, resiliencia: Shield, lideranca: Crown };

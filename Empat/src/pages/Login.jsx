@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LOGO_URL } from "../constants";
+import { LOGO_URL } from "../js/constants";
 import { toast } from "sooner";
 import { Navigate } from "react-router-dom";
 

@@ -1,18 +1,29 @@
 
 import React, { useEffect, useState } from "react";
-import { SOFT_SKILLS, SKILL_MAP } from "../constants";
+import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { Users, ClipboardList, NotebookPen, CalendarDays, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
+import { useAuth } from "../context/AuthContext";
+import { getAtletasNum } from "../js/athletes";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [athletes, setAthletes] = useState([]);
+  const [atletasNum, setAtletasNum] = useState("");
+
+  useEffect(() => {
+    async function AtletasNum() {
+      const numAtletas = await getAtletasNum();  // se for async
+      setAtletasNum(numAtletas);
+    }
+    AtletasNum();
+  }, []);
 
   const radarData = stats ? SOFT_SKILLS.map(s => ({ skill: s.name, value: stats.team_averages[s.id] || 0 })) : [];
 
   const cards = [
-    { label: "Atletas", value: stats?.athletes ?? "-", icon: Users, color: "text-cyan-600", bg: "bg-cyan-50" },
+    { label: "Atletas", value: atletasNum?.toString() ?? "-", icon: Users, color: "text-cyan-600", bg: "bg-cyan-50" },
     { label: "Avaliações", value: stats?.assessments ?? "-", icon: ClipboardList, color: "text-orange-600", bg: "bg-orange-50" },
     { label: "Observações", value: stats?.observations ?? "-", icon: NotebookPen, color: "text-pink-600", bg: "bg-pink-50" },
     { label: "Sessões", value: stats?.sessions ?? "-", icon: CalendarDays, color: "text-lime-600", bg: "bg-lime-50" },

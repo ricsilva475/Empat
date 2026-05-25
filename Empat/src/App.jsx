@@ -3,7 +3,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Layout from "./components/Layout";
+import Layout from "./components/Navbar";
 import Athletes from "./pages/Athletes";
 import AthleteDetail from "./pages/AthletesDetail";
 import Assessments from "./pages/Assessments";

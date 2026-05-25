@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LOGO_URL } from "../constants";
+import { LOGO_URL } from "../js/constants";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sooner";
+import { insertUser } from "../js/users";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -54,9 +55,10 @@ export default function Register() {
       return;
     }
 
-    //console.warn("Conta criada com sucesso!");
-    toast.success("Conta criada com sucesso!");
-    navigate("/app");
+    await insertUser({ email: formData.email, name: formData.name, password: formData.password });
+
+    console.warn("Conta criada com sucesso!");
+    navigate("/menu");
   };
 
   return (
