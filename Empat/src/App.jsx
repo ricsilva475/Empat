@@ -6,7 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Layout from "./components/Navbar";
 import Athletes from "./pages/Athletes";
 import AthleteDetail from "./pages/AthletesDetail";
-import Assessments from "./pages/Assessments";
+import Assessments from "./pages/Formulario";
 import Exercises from "./pages/Exercises";
 import Observations from "./pages/Observations";
 import Planner from "./pages/Planner";

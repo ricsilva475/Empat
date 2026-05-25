@@ -6,25 +6,33 @@ import { Link } from "react-router-dom";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
 import { useAuth } from "../context/AuthContext";
 import { getAtletasNum } from "../js/athletes";
+import {getAvaliacoesNum} from "../js/avaliacoes";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [athletes, setAthletes] = useState([]);
   const [atletasNum, setAtletasNum] = useState("");
+  const [avaliacoesNum, setAvaliacoesNum] = useState("");
 
   useEffect(() => {
     async function AtletasNum() {
-      const numAtletas = await getAtletasNum();  // se for async
+      const numAtletas = await getAtletasNum();
       setAtletasNum(numAtletas);
     }
     AtletasNum();
+
+    async function AvaliacoesNum() {
+      const numAvaliacoes = await getAvaliacoesNum();
+      setAvaliacoesNum(numAvaliacoes);
+    }
+    AvaliacoesNum();
   }, []);
 
   const radarData = stats ? SOFT_SKILLS.map(s => ({ skill: s.name, value: stats.team_averages[s.id] || 0 })) : [];
 
   const cards = [
     { label: "Atletas", value: atletasNum?.toString() ?? "-", icon: Users, color: "text-cyan-600", bg: "bg-cyan-50" },
-    { label: "Avaliações", value: stats?.assessments ?? "-", icon: ClipboardList, color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Avaliações", value: avaliacoesNum?.toString() ?? "-", icon: ClipboardList, color: "text-orange-600", bg: "bg-orange-50" },
     { label: "Observações", value: stats?.observations ?? "-", icon: NotebookPen, color: "text-pink-600", bg: "bg-pink-50" },
     { label: "Sessões", value: stats?.sessions ?? "-", icon: CalendarDays, color: "text-lime-600", bg: "bg-lime-50" },
   ];
@@ -84,13 +92,13 @@ export default function Dashboard() {
           <h2 className="font-display text-xl font-bold">Atletas recentes</h2>
           {athletes.length === 0 && (
             <div className="mt-6 text-sm text-slate-500">
-              Ainda não tens atletas. <Link to="/app/atletas" className="text-cyan-600 font-semibold">Adiciona o primeiro</Link>.
+              Ainda não tens atletas. <Link to="/menu/atletas" className="text-cyan-600 font-semibold">Adiciona o primeiro</Link>.
             </div>
           )}
           <ul className="mt-4 space-y-3">
             {athletes.slice(0, 6).map(a => (
               <li key={a.id}>
-                <Link to={`/app/atletas/${a.id}`} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition">
+                <Link to={`/menu/atletas/${a.id}`} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold">{a.name[0]}</div>
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold truncate">{a.name}</div>

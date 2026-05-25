@@ -3,13 +3,55 @@ import React, { useEffect, useState } from "react";
 import { SPORTS, SKILL_MAP } from "../js/constants";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, User } from "lucide-react";
-import { toast } from "sooner";
-import { insertAtletas } from "../js/athletes";
+import { getAtletasNum, getAtletasData, insertAtletas } from "../js/athletes";
+import { getAvaliacoes } from "../js/avaliacoes";
+import { toast } from "react-toastify";
 
 export default function Athletes() {
   const [list, setList] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" });
+  const [atletasNum, setAtletasNum] = useState("");
+  
+  useEffect(() => {
+    async function getAtletas() {
+      try {
+        const data = await getAtletasData.getAll();
+        setList(data);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    getAtletas();
+
+    async function AtletasNum() {
+      const numAtletas = await getAtletasNum(); 
+      setAtletasNum(numAtletas);
+    }
+    AtletasNum();
+
+    async function getAvaliacoesData() {
+      try {
+        const data = await getAvaliacoes.getAll();
+        setList(l => {
+          return l.map(a => ({
+            ...a,
+            skills: data.filter(av => av.athlete_id === a.id).reduce((acc, av) => {
+              for (const skill of Object.keys(SKILL_MAP)) {
+                acc[skill] = Math.max(acc[skill] || 0, av[skill] || 0);
+              }
+              return acc;
+            }, {})
+          }))
+        });
+      } catch (e) {
+        console.error(e);
+      }    
+    }
+    getAvaliacoesData();
+
+  }, []);
+
 
   const submit = async (e) => {
   e.preventDefault()
@@ -21,7 +63,9 @@ export default function Athletes() {
     console.warn("Atleta criado com sucesso!")
     setShowForm(false)
     setForm({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" })
-    load()
+    window.location.reload(D)
+    getAtletas()
+
   } catch (e) {
     console.error(e)
   }
@@ -32,7 +76,7 @@ export default function Athletes() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tighter">Atletas</h1>
-          <p className="text-slate-500 mt-1">{list.length} no total</p>
+          <p className="text-slate-500 mt-1">{atletasNum} no total</p>
         </div>
         <button onClick={() => setShowForm(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition" data-testid="add-athlete-btn">
           <Plus className="w-4 h-4" /> Novo atleta
@@ -47,7 +91,7 @@ export default function Athletes() {
           </div>
           <div>
             <label className="text-sm font-medium text-slate-700">Idade</label>
-            <input id="athlete-age" type="number" min={5} max={25} required value={form.age} onChange={e=>setForm({...form,age:e.target.value})} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200" data-testid="athlete-age"/>
+            <input id="athlete-age" type="number" min={5} max={35} required value={form.age} onChange={e=>setForm({...form,age:e.target.value})} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200" data-testid="athlete-age"/>
           </div>
           <div>
             <label className="text-sm font-medium text-slate-700">Desporto</label>
@@ -84,14 +128,14 @@ export default function Athletes() {
           {list.map(a => (
             <div key={a.id} className="rounded-2xl bg-white border border-slate-200 p-5 hover:-translate-y-0.5 transition" data-testid={`athlete-card-${a.id}`}>
               <div className="flex items-start justify-between">
-                <Link to={`/app/atletas/${a.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-lg">{a.name[0]}</div>
+                <Link to={`/menu/atletas/${a.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-lg">{a.name[0]?.toUpperCase()}</div>
                   <div className="min-w-0">
                     <div className="font-display font-bold truncate">{a.name}</div>
                     <div className="text-xs text-slate-500 capitalize">{a.sport} · {a.age} anos · {a.team || "Sem equipa"}</div>
                   </div>
                 </Link>
-                <button onClick={() => del(a.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-athlete-${a.id}`}><Trash2 className="w-4 h-4"/></button>
+                <button onClick={() => deleteAtleta(a.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-athlete-${a.id}`}><Trash2 className="w-4 h-4"/></button>
               </div>
               <div className="mt-4 grid grid-cols-4 gap-1.5">
                 {Object.entries(a.skills || {}).map(([k,v]) => (
@@ -101,7 +145,7 @@ export default function Athletes() {
                   </div>
                 ))}
               </div>
-              <Link to={`/app/atletas/${a.id}`} className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700">Ver perfil →</Link>
+              <Link to={`/menu/atletas/${a.id}`} className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700">Ver perfil →</Link>
             </div>
           ))}
         </div>

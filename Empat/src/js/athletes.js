@@ -12,7 +12,7 @@ export const getAtletasNum = async () => {
 
   if (error) throw error
 
-  return count
+  return count ?? 0
 }
 
 export const insertAtletas = {
@@ -50,11 +50,28 @@ export const getAtletasData = {
       .eq('user_id', user.id)
 
     if (error) throw error
+    //console.log("Dados dos atletas:", data);
     return data
   },
 }
 
-/*export const deleteAtleta = {
+export const getAtletaDetail = async (id) => {
+  const user = await getUser();
+
+  if (!user) throw new Error("Utilizador não autenticado")
+  const { data, error } = await supabase
+    .from('athletes')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single()
+
+  if (error) throw error
+  //console.log("Dados do atleta:", data);
+  return data
+}
+
+export const deleteAtleta = {
   async delete(id) {
     
     const user = await getUser();
@@ -69,5 +86,5 @@ export const getAtletasData = {
 
     if (error) throw error
   },
-}*/
+}
 

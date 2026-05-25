@@ -5,6 +5,8 @@ import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { toast } from "sooner";
+import { getAtletaDetail } from "../js/athletes";
+import { getLastAvaliacaoByAtleta } from "../js/avaliacoes";
 
 export default function AthleteDetail() {
   const { id } = useParams();
@@ -12,16 +14,17 @@ export default function AthleteDetail() {
   const [feedback, setFeedback] = useState(null);
   const [loadingAi, setLoadingAi] = useState(false);
 
-  const load = () => api.get(`/athletes/${id}`).then(r => setData(r.data));
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    const load = async () => {
+      const athleteData = await getAtletaDetail(id);
+      setData(athleteData);
+    };
+    load();
+  }, [id]);
 
   const runFeedback = async () => {
+    console.warn("A correr análise IA para o atleta", id);
     setLoadingAi(true);
-    try {
-      const { data: d } = await api.post(`/ai/athlete-feedback/${id}`);
-      setFeedback(d);
-    } catch (e) { toast.error(formatApiError(e)); }
-    finally { setLoadingAi(false); }
   };
 
   if (!data) return <div className="text-slate-500\">A carregar...</div>;
@@ -33,12 +36,12 @@ export default function AthleteDetail() {
 
   return (
     <div className="space-y-6" data-testid="athlete-detail">
-      <Link to="/app/atletas" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
+      <Link to="/menu/atletas" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
         <ArrowLeft className="w-4 h-4"/> Voltar
       </Link>
 
       <div className="rounded-2xl bg-white border border-slate-200 p-6 flex items-center gap-5">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-3xl">{data.name[0]}</div>
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-3xl">{data.name[0]?.toUpperCase()}</div>
         <div className="flex-1">
           <h1 className="font-display text-3xl font-bold tracking-tighter">{data.name}</h1>
           <div className="text-slate-500 capitalize mt-1">{data.sport} · {data.age} anos · {data.team || "Sem equipa"}{data.position ? ` · ${data.position}` : ""}</div>

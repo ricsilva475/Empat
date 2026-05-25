@@ -9,19 +9,19 @@ const nav = [
   { to: "/menu", end: true, label: "Visão Geral", icon: LayoutDashboard },
   { to: "/menu/atletas", label: "Atletas", icon: Users },
   { to: "/menu/avaliacoes", label: "Avaliações", icon: ClipboardList },
+/*{ to: "/menu/observacoes", label: "Observações + IA", icon: NotebookPen },
   { to: "/menu/exercicios", label: "Banco de Exercícios", icon: Dumbbell },
-  { to: "/menu/observacoes", label: "Observações + IA", icon: NotebookPen },
   { to: "/menu/planos", label: "Plano com IA", icon: Sparkles },
   { to: "/menu/metas", label: "Metas", icon: Target },
-  { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
+  { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },*/
 ];
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const nav_ = useNavigate();
 
-  console.warn("Navbar carregada");
-  console.warn("getUserData:", user);
+  //console.warn("Navbar carregada");
+  //console.warn("getUserData:", user);
 
   const linkCls = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${

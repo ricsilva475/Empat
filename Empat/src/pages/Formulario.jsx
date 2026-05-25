@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { toast } from "sooner";
+import { getAtletasData } from "../js/athletes";
+import { insertAvaliacao } from "../js/avaliacoes";
+import { Questions } from "../js/forms";
 
 const QUESTIONS = {
   empatia: [
@@ -37,7 +40,19 @@ export default function Assessments() {
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
 
-  useEffect(() => { api.get("/athletes").then(r => setAthletes(r.data)); }, []);
+  useEffect(() => {
+    async function getAtletas() {
+      try {
+        const data = await getAtletasData.getAll();
+        setAthletes(data);
+        //setAthleteId(data.length ? data[0].id : "");
+      } catch (e) {
+        console.warn("Erro ao carregar atletas. Tenta novamente.");
+      }
+    }
+    getAtletas();
+
+  }, []);
 
   const setAns = (skill, idx, val) => setAnswers(p => ({ ...p, [`${skill}-${idx}`]: val }));
 
@@ -55,10 +70,10 @@ export default function Assessments() {
     const scores = computeScores();
     setSaving(true);
     try {
-      await api.post("/assessments", { athlete_id: athleteId, scores, notes });
-      toast.success("Avaliação guardada");
+      await insertAvaliacao({ athlete_id: athleteId, empatia: scores.empatia, comunicacao: scores.comunicacao, resiliencia: scores.resiliencia, lideranca: scores.lideranca, notes });
+      console.warn("Avaliação guardada com sucesso!");
       setAnswers({}); setNotes("");
-    } catch (e) { toast.error(formatApiError(e)); }
+    } catch (e) { console.error("Erro ao guardar avaliação:", e); }
     finally { setSaving(false); }
   };
 
@@ -72,7 +87,6 @@ export default function Assessments() {
       </div>
 
       <div className="rounded-2xl bg-white border border-slate-200 p-5">
-        <label className="text-sm font-medium text-slate-700">Atleta</label>
         <select value={athleteId} onChange={e=>setAthleteId(e.target.value)} className="mt-1.5 w-full md:w-96 px-4 py-2.5 rounded-xl border border-slate-200 bg-white" data-testid="assessment-athlete-select">
           <option value="">— Escolhe um atleta —</option>
           {athletes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
