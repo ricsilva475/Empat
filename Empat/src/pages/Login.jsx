@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LOGO_URL } from "../constants";
 import { toast } from "sooner";
+import { Navigate } from "react-router-dom";
 
 export default function Login() {
   const {login, loading} = useAuth();
@@ -21,8 +22,8 @@ export default function Login() {
     if (loginError) {
       setError(loginError.message || 'Erro ao fazer login');
     } else {
-        console.warn("Login bem-sucedido!");
-      navigate('/Dashboard');
+        console.log("Login bem-sucedido, redirecionando para dashboard");
+      navigate('/menu');
     }
   };
 
