@@ -10,9 +10,6 @@ export default function Athletes() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" });
 
-  const load = () => api.get("/athletes").then(r => setList(r.data));
-  useEffect(() => { load(); }, []);
-
   const submit = async (e) => {
     e.preventDefault();
     try {
@@ -22,13 +19,6 @@ export default function Athletes() {
       setForm({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" });
       load();
     } catch (e) { toast.error(formatApiError(e)); }
-  };
-
-  const del = async (id) => {
-    if (!window.confirm("Eliminar este atleta?")) return;
-    await api.delete(`/athletes/${id}`);
-    toast.success("Eliminado");
-    load();
   };
 
   return (

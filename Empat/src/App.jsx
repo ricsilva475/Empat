@@ -32,7 +32,6 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/menu" element={<Protected><Layout /></Protected>}>
           <Route index element={<Dashboard />} />
-          {/* Rotas protegidas */}
           <Route path="/menu/atletas" element={<Athletes />} />
           <Route path="/menu/atletas/:id" element={<AthleteDetail />} />
           <Route path="/menu/avaliacoes" element={<Assessments />} />

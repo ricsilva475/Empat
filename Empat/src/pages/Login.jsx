@@ -80,7 +80,7 @@ export default function Login() {
             <button type="submit" disabled={loading}
               className="w-full px-4 py-2 text-white font-medium rounded-full bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300"
               data-testid="login-submit">
-              {loading ? "A entrar..." : "Entrar com Google"}
+              {loading ? "A entrar..." : "Entrar com Google - Em breve"}
             </button>
           </form>
 
