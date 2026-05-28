@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
 import { useAuth } from "../context/AuthContext";
 
-import {AtletasData, AtletasNum} from "../js/athletes";
-import {AvaliacoesNum, LastAvaliacoes} from "../js/avaliacoes";
+import {Atletas} from "../js/athletes";
+import {Avaliacoes} from "../js/avaliacoes";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -16,25 +16,26 @@ export default function Dashboard() {
   const [avaliacoesNum, setAvaliacoesNum] = useState("");
 
   useEffect(() => {
-    async function Atletas() {
-      const numAtletas = await AtletasNum.get();
-      const data = await AtletasData.getAll();
-      setAtletasNum(numAtletas);
+    async function AtletasData() {
+      const count = await Atletas.getAtletasCount();
+      const data = await Atletas.getAllData();
+      setAtletasNum(count);
       setAthletes(data);
     }
-    Atletas();
+    AtletasData();
 
-    async function Avaliacoes() {
-      const numAvaliacoes = await AvaliacoesNum.get();
-      const athletesIds = await AtletasData.getAll();
-      const avaliacoes = await LastAvaliacoes.get(athletesIds);
+    async function AvaliacoesData() {
+      const numAvaliacoes = await Avaliacoes.getAvaliacoesCount();
+      const athletesIds = await Atletas.getAllData();
+      const avaliacoes = await Avaliacoes.getLastAvaliacoes(athletesIds);
       const averageTeamValue = { team_averages: calcTeamAverages(avaliacoes) };
       setStats(averageTeamValue);
       setAvaliacoesNum(numAvaliacoes);
     }
-    Avaliacoes();
+    AvaliacoesData();
   }, []);
 
+  // Função para calcular a média da equipa
   function calcTeamAverages(data) {
 
   return SOFT_SKILLS.reduce((acc, skill) => {

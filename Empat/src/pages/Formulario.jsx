@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { toast } from "sooner";
-import { AtletasData } from "../js/athletes";
-import { insertAvaliacao } from "../js/avaliacoes";
 import { Questions } from "../js/forms";
+
+import { Atletas} from "../js/athletes";
+import { Avaliacoes } from "../js/avaliacoes";
 
 const QUESTIONS = {
   empatia: [
@@ -43,7 +44,7 @@ export default function Assessments() {
   useEffect(() => {
     async function getAtletas() {
       try {
-        const data = await AtletasData.getAll();
+        const data = await Atletas.getAllData();
         setAthletes(data);
         //setAthleteId(data.length ? data[0].id : "");
       } catch (e) {

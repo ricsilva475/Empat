@@ -5,8 +5,9 @@ import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { toast } from "sooner";
-import { AtletasDetail } from "../js/athletes";
-import { LastAvaliacaoByAtleta } from "../js/avaliacoes";
+
+import { Atletas } from "../js/athletes";
+import { Avaliacoes } from "../js/avaliacoes";
 
 export default function AthleteDetail() {
   const { id } = useParams();
@@ -17,8 +18,8 @@ export default function AthleteDetail() {
 
   useEffect(() => {
     const load = async () => {
-      const athleteData = await AtletasDetail.get(id);
-      const lastAvaliacao = await LastAvaliacaoByAtleta.get(id);
+      const athleteData = await Atletas.getAtletaDetails(id);
+      const lastAvaliacao = await Avaliacoes.getLastAvaliacaoByAtleta(id);
       setData(athleteData);
       setAvaliacao(lastAvaliacao);
     };

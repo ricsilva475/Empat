@@ -3,9 +3,10 @@ import React, { useEffect, useState } from "react";
 import { SPORTS, SKILL_MAP } from "../js/constants";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, User } from "lucide-react";
-import { AtletasNum, AtletasData, Atletas } from "../js/athletes";
-import { Avaliacoes } from "../js/avaliacoes";
 import { toast } from "react-toastify";
+
+import { Atletas } from "../js/athletes";
+import { Avaliacoes } from "../js/avaliacoes";
 
 export default function Athletes() {
   const [list, setList] = useState([]);
@@ -14,25 +15,22 @@ export default function Athletes() {
   const [atletasNum, setAtletasNum] = useState("");
   
   useEffect(() => {
-    async function getAtletas() {
+    
+    async function AtletasData() {
       try {
-        const data = await AtletasData.getAll();
+        const data = await Atletas.getAllData();
+        const numAtletas = await Atletas.getAtletasCount();
+        setAtletasNum(numAtletas);
         setList(data);
       } catch (e) {
         console.error(e);
       }
     }
-    getAtletas();
+    AtletasData();
 
-    async function getAtletasNum() {
-      const numAtletas = await AtletasNum.get(); 
-      setAtletasNum(numAtletas);
-    }
-    getAtletasNum();
-
-    async function getAvaliacoesData() {
+    async function AvaliacoesData() {
       try {
-        const data = await Avaliacoes.getAll();
+        const data = await Avaliacoes.getAllData();
         setList(l => {
           return l.map(a => ({
             ...a,
@@ -48,7 +46,7 @@ export default function Athletes() {
         console.error(e);
       }    
     }
-    getAvaliacoesData();
+    AvaliacoesData();
 
   }, []);
 

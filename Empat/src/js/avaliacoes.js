@@ -1,34 +1,32 @@
 import { supabase } from '../context/AuthContext';
 
-// Função para obter o utilizador autenticado
 const getUser = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   return user;
 };
 
-// Função para inserir uma nova avaliação
-export const insertAvaliacao = async (userData) => {
+export const Avaliacoes = {
+
+  async insert(data) {
     const user = await getUser();
+
     if (!user) throw new Error("Utilizador não autenticado")
-   
-  const { error } = await supabase
+    const { error } = await supabase
       .from('avaliacoes')
       .insert({
-        athlete_id: userData.athlete_id,
+        athlete_id: data.athlete_id,
         user_id: user.id,
-        empatia: userData.empatia,
-        comunicacao: userData.comunicacao,
-        resiliencia: userData.resiliencia,
-        lideranca: userData.lideranca,
-        notes: userData.notes,
+        empatia: data.empatia,
+        comunicacao: data.comunicacao,
+        resiliencia: data.resiliencia,
+        lideranca: data.lideranca,
+        notes: data.notes,
       })
 
     if (error) throw error
-};
+  },
 
-// Função para obter todas as avaliações do atleta
-export const Avaliacoes = {
-  async getAll() {
+  async getAllData() {
 
     const user = await getUser();
 
@@ -43,24 +41,8 @@ export const Avaliacoes = {
    
     return data
   },
-}
 
-// Função para obter o número total de avaliações
-export const AvaliacoesNum = { 
-  async get() {
-  const { count, error } = await supabase
-    .from('avaliacoes')
-    .select('*', { count: 'exact', head: true })
-
-  if (error) throw error
-  
-  return count ?? 0
-  }
-}
-
-// Função para obter a última avaliação de um atleta específico
-export const LastAvaliacaoByAtleta = {
-    async get(athlete_id) {
+  async getLastAvaliacaoByAtleta(athlete_id) {
 
     const user = await getUser();
 
@@ -80,12 +62,9 @@ export const LastAvaliacaoByAtleta = {
         return data?.[0] || null
 
   },
-}
 
-// Função para obter as últimas avaliações 
-export const LastAvaliacoes = {
-  async get(athletes) {
-    
+  async getLastAvaliacoes(athletes) {
+
     const user = await getUser();
 
     if (!user) throw new Error("Utilizador não autenticado");
@@ -102,5 +81,18 @@ export const LastAvaliacoes = {
     if (error) throw error;
 
     return data;
-  }
+  },
+
+  async getAvaliacoesCount() {
+    const { count, error } = await supabase
+      .from('avaliacoes')
+      .select('*', { count: 'exact', head: true })
+
+    if (error) throw error
+    
+    return count ?? 0
+  },
+
 }
+
+
