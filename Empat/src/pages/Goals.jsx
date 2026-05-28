@@ -10,12 +10,6 @@ export default function Goals() {
   const [form, setForm] = useState({ athlete_id: "", skill: "comunicacao", description: "", target_level: 4, deadline: "" });
   const [show, setShow] = useState(false);
 
-  const load = () => Promise.all([
-    api.get("/goals").then(r=>setGoals(r.data)),
-    api.get("/athletes").then(r=>setAthletes(r.data)),
-  ])
-  useEffect(()=>{ load(); }, []);
-
   const submit = async (e) => {
     e.preventDefault();
     try {

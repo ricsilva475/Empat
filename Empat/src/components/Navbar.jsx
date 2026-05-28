@@ -3,17 +3,23 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LOGO_URL } from "../js/constants";
-import { LayoutDashboard, Users, ClipboardList, Dumbbell, NotebookPen, Sparkles, Target, CalendarDays, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Dumbbell, NotebookPen, Sparkles, Target, CalendarDays, UserCircle, LogOut } from "lucide-react";
 
 const nav = [
   { to: "/menu", end: true, label: "Visão Geral", icon: LayoutDashboard },
   { to: "/menu/atletas", label: "Atletas", icon: Users },
   { to: "/menu/avaliacoes", label: "Avaliações", icon: ClipboardList },
   { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
+  
+
+  
 /*{ to: "/menu/observacoes", label: "Observações + IA", icon: NotebookPen },
-  { to: "/menu/exercicios", label: "Banco de Exercícios", icon: Dumbbell },
-  { to: "/menu/planos", label: "Plano com IA", icon: Sparkles },
   { to: "/menu/metas", label: "Metas", icon: Target },
+  { to: "/menu/exercicios", label: "Banco de Exercícios", icon: Dumbbell },
+   { to: "/menu/perfil", label: "Perfil", icon: UserCircle }, 
+  
+  { to: "/menu/planos", label: "Plano com IA", icon: Sparkles },
+  
   */
 ];
 
@@ -52,15 +58,19 @@ export default function Layout() {
           })}
         </nav>
         <div className="p-4 border-t border-slate-100">
-          <div className="flex items-center gap-3 mb-3">
+          <Link to="/menu/perfil" className="flex items-center gap-3 mb-3 p-2 -m-2 rounded-xl hover:bg-slate-50 transition" data-testid="sidebar-profile-link">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold">
-              {user?.user_metadata?.full_name?.[0]?.toUpperCase() || "E"}
+              {user?.user_metadata?.full_name?.[0]?.toUpperCase() || "C"}
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold truncate">{user?.user_metadata?.full_name}</div>
-              <div className="text-xs text-slate-500 truncate">{user?.email}</div>
+              <div className="text-sm font-semibold truncate">{
+                user?.user_metadata?.full_name
+              }</div>
+              <div className="text-xs text-slate-500 truncate">{
+                user?.email
+              }</div>
             </div>
-          </div>
+          </Link>
           <button
             onClick={async () => { await logout(); nav_( "/"); }}
             data-testid="logout-btn"

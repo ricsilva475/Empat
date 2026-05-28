@@ -11,6 +11,7 @@ import Exercises from "./pages/Exercises";
 import Observations from "./pages/Observations";
 import Planner from "./pages/Planner";
 import Goals from "./pages/Goals";
+import Profile from "./pages/Perfil";
 import Calendar from "./pages/Calendar";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/menu" element={<Protected><Layout /></Protected>}>
           <Route index element={<Dashboard />} />
+          <Route path="/menu/perfil" element={<Profile />} />
           <Route path="/menu/atletas" element={<Athletes />} />
           <Route path="/menu/atletas/:id" element={<AthleteDetail />} />
           <Route path="/menu/avaliacoes" element={<Assessments />} />

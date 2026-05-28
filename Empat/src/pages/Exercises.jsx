@@ -8,14 +8,6 @@ export default function Exercises() {
   const [skill, setSkill] = useState("");
   const [sport, setSport] = useState("");
 
-  const load = () => {
-    const p = new URLSearchParams();
-    if (skill) p.set("skill", skill);
-    if (sport) p.set("sport", sport);
-    api.get(`/exercises?${p.toString()}`).then(r => setList(r.data));
-  };
-  useEffect(() => { load(); }, [skill, sport]);
-
   return (
     <div className="space-y-6" data-testid="exercises-page">
       <div>
