@@ -14,3 +14,4 @@ export const SPORTS = ["futebol", "basquetebol", "voleibol", "andebol", "atletis
 export const HERO_IMG = "https://images.pexels.com/photos/8941650/pexels-photo-8941650.jpeg";
 export const FEATURE_AI = "https://images.pexels.com/photos/10347865/pexels-photo-10347865.jpeg";
 export const FEATURE_EX = "https://images.pexels.com/photos/974502/pexels-photo-974502.jpeg";
+

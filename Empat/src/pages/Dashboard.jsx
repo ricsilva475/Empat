@@ -5,8 +5,9 @@ import { Users, ClipboardList, NotebookPen, CalendarDays, Sparkles } from "lucid
 import { Link } from "react-router-dom";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
 import { useAuth } from "../context/AuthContext";
-import { getAtletasNum } from "../js/athletes";
-import {getAvaliacoesNum} from "../js/avaliacoes";
+
+import {AtletasData, AtletasNum} from "../js/athletes";
+import {AvaliacoesNum, LastAvaliacoes} from "../js/avaliacoes";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -15,22 +16,43 @@ export default function Dashboard() {
   const [avaliacoesNum, setAvaliacoesNum] = useState("");
 
   useEffect(() => {
-    async function AtletasNum() {
-      const numAtletas = await getAtletasNum();
+    async function Atletas() {
+      const numAtletas = await AtletasNum.get();
+      const data = await AtletasData.getAll();
       setAtletasNum(numAtletas);
+      setAthletes(data);
     }
-    AtletasNum();
+    Atletas();
 
-    async function AvaliacoesNum() {
-      const numAvaliacoes = await getAvaliacoesNum();
+    async function Avaliacoes() {
+      const numAvaliacoes = await AvaliacoesNum.get();
+      const athletesIds = await AtletasData.getAll();
+      const avaliacoes = await LastAvaliacoes.get(athletesIds);
+      const averageTeamValue = { team_averages: calcTeamAverages(avaliacoes) };
+      setStats(averageTeamValue);
       setAvaliacoesNum(numAvaliacoes);
     }
-    AvaliacoesNum();
+    Avaliacoes();
   }, []);
+
+  function calcTeamAverages(data) {
+
+  return SOFT_SKILLS.reduce((acc, skill) => {
+    const values = data
+      .map(row => row[skill.id])
+      .filter(v => v !== null && v !== undefined);
+
+    acc[skill.id] = values.length > 0
+      ? Math.round((values.reduce((sum, v) => sum + v, 0) / values.length) * 10) / 10
+      : 0;
+
+    return acc;
+  }, {});
+}
 
   const radarData = stats ? SOFT_SKILLS.map(s => ({ skill: s.name, value: stats.team_averages[s.id] || 0 })) : [];
 
-  const cards = [
+  const CARDS = [
     { label: "Atletas", value: atletasNum?.toString() ?? "-", icon: Users, color: "text-cyan-600", bg: "bg-cyan-50" },
     { label: "Avaliações", value: avaliacoesNum?.toString() ?? "-", icon: ClipboardList, color: "text-orange-600", bg: "bg-orange-50" },
     { label: "Observações", value: stats?.observations ?? "-", icon: NotebookPen, color: "text-pink-600", bg: "bg-pink-50" },
@@ -46,7 +68,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {cards.map((c, i) => {
+        {CARDS.map((c, i) => {
           const Icon = c.icon;
           return (
             <div key={i} className="rounded-2xl bg-white border border-slate-200 p-5">
@@ -92,14 +114,14 @@ export default function Dashboard() {
           <h2 className="font-display text-xl font-bold">Atletas recentes</h2>
           {athletes.length === 0 && (
             <div className="mt-6 text-sm text-slate-500">
-              Ainda não tens atletas. <Link to="/menu/atletas" className="text-cyan-600 font-semibold">Adiciona o primeiro</Link>.
+              Ainda não tens aletas. <Link to="/menu/atletas" className="text-cyan-600 font-semibold">Adiciona o primeiro</Link>.
             </div>
           )}
           <ul className="mt-4 space-y-3">
             {athletes.slice(0, 6).map(a => (
               <li key={a.id}>
                 <Link to={`/menu/atletas/${a.id}`} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold">{a.name[0]}</div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold">{a.name[0].toUpperCase()}</div>
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold truncate">{a.name}</div>
                     <div className="text-xs text-slate-500 capitalize">{a.sport} · {a.age} anos</div>

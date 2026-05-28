@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { toast } from "sooner";
-import { getAtletasData } from "../js/athletes";
+import { AtletasData } from "../js/athletes";
 import { insertAvaliacao } from "../js/avaliacoes";
 import { Questions } from "../js/forms";
 
@@ -43,7 +43,7 @@ export default function Assessments() {
   useEffect(() => {
     async function getAtletas() {
       try {
-        const data = await getAtletasData.getAll();
+        const data = await AtletasData.getAll();
         setAthletes(data);
         //setAthleteId(data.length ? data[0].id : "");
       } catch (e) {

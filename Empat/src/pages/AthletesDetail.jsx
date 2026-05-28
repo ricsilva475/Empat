@@ -5,19 +5,22 @@ import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { toast } from "sooner";
-import { getAtletaDetail } from "../js/athletes";
-import { getLastAvaliacaoByAtleta } from "../js/avaliacoes";
+import { AtletasDetail } from "../js/athletes";
+import { LastAvaliacaoByAtleta } from "../js/avaliacoes";
 
 export default function AthleteDetail() {
   const { id } = useParams();
   const [data, setData] = useState(null);
+  const [avaliacao, setAvaliacao] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [loadingAi, setLoadingAi] = useState(false);
 
   useEffect(() => {
     const load = async () => {
-      const athleteData = await getAtletaDetail(id);
+      const athleteData = await AtletasDetail.get(id);
+      const lastAvaliacao = await LastAvaliacaoByAtleta.get(id);
       setData(athleteData);
+      setAvaliacao(lastAvaliacao);
     };
     load();
   }, [id]);
@@ -54,7 +57,7 @@ export default function AthleteDetail() {
 
       <div className="grid md:grid-cols-4 gap-4">
         {SOFT_SKILLS.map(s => {
-          const v = data.skills?.[s.id] ?? 0;
+          const v = avaliacao?.[s.id] ?? 0;
           return (
             <div key={s.id} className="rounded-2xl bg-white border border-slate-200 p-5">
               <div className="text-xs font-bold uppercase tracking-wider" style={{color: s.color}}>{s.name}</div>

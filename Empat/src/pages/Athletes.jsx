@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { SPORTS, SKILL_MAP } from "../js/constants";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, User } from "lucide-react";
-import { getAtletasNum, getAtletasData, insertAtletas } from "../js/athletes";
-import { getAvaliacoes } from "../js/avaliacoes";
+import { AtletasNum, AtletasData, Atletas } from "../js/athletes";
+import { Avaliacoes } from "../js/avaliacoes";
 import { toast } from "react-toastify";
 
 export default function Athletes() {
@@ -16,7 +16,7 @@ export default function Athletes() {
   useEffect(() => {
     async function getAtletas() {
       try {
-        const data = await getAtletasData.getAll();
+        const data = await AtletasData.getAll();
         setList(data);
       } catch (e) {
         console.error(e);
@@ -24,15 +24,15 @@ export default function Athletes() {
     }
     getAtletas();
 
-    async function AtletasNum() {
-      const numAtletas = await getAtletasNum(); 
+    async function getAtletasNum() {
+      const numAtletas = await AtletasNum.get(); 
       setAtletasNum(numAtletas);
     }
-    AtletasNum();
+    getAtletasNum();
 
     async function getAvaliacoesData() {
       try {
-        const data = await getAvaliacoes.getAll();
+        const data = await Avaliacoes.getAll();
         setList(l => {
           return l.map(a => ({
             ...a,
@@ -56,14 +56,14 @@ export default function Athletes() {
   const submit = async (e) => {
   e.preventDefault()
   try {
-    await insertAtletas.insert({
+    await Atletas.insert({
       ...form,
       age: parseInt(form.age),
     })
     console.warn("Atleta criado com sucesso!")
     setShowForm(false)
     setForm({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" })
-    window.location.reload(D)
+    window.location.reload()
     getAtletas()
 
   } catch (e) {
