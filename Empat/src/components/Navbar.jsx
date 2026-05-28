@@ -9,11 +9,12 @@ const nav = [
   { to: "/menu", end: true, label: "Visão Geral", icon: LayoutDashboard },
   { to: "/menu/atletas", label: "Atletas", icon: Users },
   { to: "/menu/avaliacoes", label: "Avaliações", icon: ClipboardList },
+  { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
 /*{ to: "/menu/observacoes", label: "Observações + IA", icon: NotebookPen },
   { to: "/menu/exercicios", label: "Banco de Exercícios", icon: Dumbbell },
   { to: "/menu/planos", label: "Plano com IA", icon: Sparkles },
   { to: "/menu/metas", label: "Metas", icon: Target },
-  { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },*/
+  */
 ];
 
 export default function Layout() {

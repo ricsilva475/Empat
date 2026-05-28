@@ -11,6 +11,7 @@ import Exercises from "./pages/Exercises";
 import Observations from "./pages/Observations";
 import Planner from "./pages/Planner";
 import Goals from "./pages/Goals";
+import Calendar from "./pages/Calendar";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/menu/observacoes" element={<Observations />} />
           <Route path="/menu/planos" element={<Planner />} />
           <Route path="/menu/metas" element={<Goals />} />
+          <Route path="/menu/calendario" element={<Calendar />} />
           </Route>
         </Routes>
       </BrowserRouter>
