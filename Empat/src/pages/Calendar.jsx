@@ -2,28 +2,51 @@
 import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../js/constants";
 import { Plus, Trash2, CalendarDays } from "lucide-react";
+import { Classes } from "../js/classes";
 
 export default function CalendarPage() {
   const [sessions, setSessions] = useState([]);
   const [show, setShow] = useState(false);
   const [form, setForm] = useState({ title: "", date: "", sport: "futebol", focus_skill: "comunicacao", team: "", notes: "" });
 
+  useEffect(() => {
+      
+      async function ClassesData() {
+        try {
+          const data = await Classes.getAllData();
+          console.log("Sessões carregadas:", data);
+          setSessions(data);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      ClassesData();
+    }, []);
+
   const submit = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/sessions", form);
-      toast.success("Sessão agendada");
-      setShow(false); setForm({ title: "", date: "", sport: "futebol", focus_skill: "comunicacao", team: "", notes: "" });
-      load();
-    } catch (e) { toast.error(formatApiError(e)); }
+    await Classes.insert({
+            ...form,
+            date: new Date(form.date).toISOString(),
+    })
+      console.log("Aula criada:", form);
+      setShow(false); 
+      setForm({ title: "", date: "", sport: "futebol", focus_skill: "comunicacao", team: "", notes: "" });
+      window.location.reload();
+    } catch (e) { console.log("Erro: ", e); }
   };
 
-  const del = async (id) => { await api.delete(`/sessions/${id}`); load(); };
-
   const grouped = sessions.reduce((acc, s) => {
-    const d = (s.date || "").slice(0,10);
-    acc[d] = acc[d] || []; acc[d].push(s); return acc;
-  }, {});
+  
+  const day = (s.time || "").slice(0, 10);
+
+  acc[day] = acc[day] || [];
+  acc[day].push(s);
+
+  return acc;
+
+    }, {});
 
   return (
     <div className="space-y-6" data-testid="calendar-page">
@@ -83,7 +106,7 @@ export default function CalendarPage() {
         <div className="space-y-6">
           {Object.entries(grouped).map(([date, items]) => (
             <div key={date}>
-              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">{new Date(date).toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long" })}</h2>
+              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">{new Date(date).toLocaleDateString("pt-PT", {weekday: "long",day: "2-digit"})}</h2>
               <div className="grid md:grid-cols-2 gap-3">
                 {items.map(s => {
                   const sk = SKILL_MAP[s.focus_skill];
@@ -91,7 +114,7 @@ export default function CalendarPage() {
                     <div key={s.id} className="rounded-2xl bg-white border border-slate-200 p-5 flex gap-4" data-testid={`session-${s.id}`}>
                       <div className="w-1.5 rounded-full" style={{background: sk?.color}}/>
                       <div className="flex-1">
-                        <div className="text-xs text-slate-500">{new Date(s.date).toLocaleTimeString("pt-PT", { hour:"2-digit", minute:"2-digit" })} · {s.team || "—"}</div>
+                        <div className="text-xs text-slate-500">{new Date(s.time).toLocaleTimeString("pt-PT", {hour: "2-digit",minute: "2-digit"})} · {s.team || "—"}</div>
                         <h3 className="font-display font-bold">{s.title}</h3>
                         <div className="mt-2 flex items-center gap-2 text-xs">
                           <span className={`px-2 py-0.5 rounded-full font-bold ${sk?.soft}`}>{sk?.name}</span>
