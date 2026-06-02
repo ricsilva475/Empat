@@ -13,6 +13,7 @@ export default function AthleteDetail() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [avaliacao, setAvaliacao] = useState(null);
+  const [avaliacoes, setAvaliacoes] = useState([null]);
   const [feedback, setFeedback] = useState(null);
   const [loadingAi, setLoadingAi] = useState(false);
 
@@ -20,8 +21,12 @@ export default function AthleteDetail() {
     const load = async () => {
       const athleteData = await Atletas.getAtletaDetails(id);
       const lastAvaliacao = await Avaliacoes.getLastAvaliacaoByAtleta(id);
+      const avaliacoes = await Avaliacoes.getAvaliacoesByAtleta(id);
+
+      console.warn("Dados do atleta carregados:", avaliacoes);
       setData(athleteData);
       setAvaliacao(lastAvaliacao);
+      setAvaliacoes(avaliacoes);
     };
     load();
   }, [id]);
@@ -33,10 +38,16 @@ export default function AthleteDetail() {
 
   if (!data) return <div className="text-slate-500\">A carregar...</div>;
 
-  const chartData = (data.history || []).map(h => ({
-    date: new Date(h.created_at).toLocaleDateString("pt-PT", { day: "2-digit", month: "short" }),
-    ...h.scores,
-  }));
+  const chartData = (avaliacoes || []).map(a => ({
+  date: new Date(a.created_at).toLocaleDateString("pt-PT", {
+    day: "2-digit",
+    month: "short",
+  }),
+  comunicacao: a.comunicacao,
+  empatia: a.empatia,
+  lideranca: a.lideranca,
+  resiliencia: a.resiliencia,
+}));
 
   return (
     <div className="space-y-6" data-testid="athlete-detail">

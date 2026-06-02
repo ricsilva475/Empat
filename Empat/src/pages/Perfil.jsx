@@ -1,9 +1,108 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { User, Mail, Save, KeyRound, Loader2, ClipboardList, Users as UsersIcon, NotebookPen, CalendarDays } from "lucide-react";
+import { Users } from "../js/users";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
+  const [formData, setFormData] = useState({
+    name: "",
+    role: "",
+    organization: "",
+    phone: "",
+    bio: "",
+  });
+
+  useEffect(() => {
+  
+    async function loadUser() {
+    try {
+      const data = await Users.getUserData(user.email);
+
+      console.log("User data:", data);
+
+      setFormData({
+        name: data.name || "",
+        role: data.role || "",
+        organization: data.organization || "",
+        phone: data.phone || "",
+        bio: data.bio || "",
+      });
+
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (user?.email) {
+    loadUser();
+  }
+}, [user]);
+
+const onSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!formData.name.trim()) {
+      setError("O nome é obrigatório.");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError("O email é obrigatório.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("A palavra-passe deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    const { error: signupError } = await signup(
+      formData.email,
+      formData.password,
+      formData.name
+    );
+
+    if (signupError) {
+      const message = signupError.message || "Erro ao criar conta. Tenta novamente.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+    await Users.updateUser({
+      id: user.id,
+      name: formData.name,
+      role: formData.role,
+      organization: formData.organization,
+      phone: formData.phone,
+      bio: formData.bio,
+    });
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (pwd.new_password !== pwd.confirm) {
+      setError("As novas passwords não coincidem.");
+      return;
+    } 
+    if (pwd.new_password.length < 6) {
+      setError("A nova password deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({
+      password: pwd.new_password,
+    });
+    if (error) {
+      const message = error.message || "Erro ao alterar password. Tenta novamente.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+    console.warn("Password alterada com sucesso!");
+  };
 
   return (
     <div className="space-y-6" data-testid="profile-page">
@@ -33,7 +132,7 @@ export default function Profile() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Informações pessoais */}
-        <form onSubmit={""} className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4" data-testid="profile-form">
+        <form onSubmit={onSubmit} className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4" data-testid="profile-form">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-slate-700" />
             <h3 className="font-display text-xl font-bold">Informações pessoais</h3>
@@ -41,7 +140,7 @@ export default function Profile() {
 
           <div>
             <label className="text-sm font-medium text-slate-700">Nome completo</label>
-            <input value={user.user_metadata?.full_name} onChange={e=>setForm({...form, name: e.target.value})}
+            <input value={user.user_metadata?.full_name} onChange={e=>setFormData({...formData, name: e.target.value})}
               className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               data-testid="profile-name" />
           </div>
@@ -56,15 +155,15 @@ export default function Profile() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-slate-700">Desporto principal</label>
-              <input value={""} onChange={e=>setForm({...form, sport: e.target.value})}
-                placeholder="Ex: futebol"
+              <label className="text-sm font-medium text-slate-700">Função</label>
+              <input value={""} onChange={e=>setFormData({...formData, role: e.target.value})}
+                placeholder="Ex: coach"
                 className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
                 data-testid="profile-sport" />
             </div>
             <div>
               <label className="text-sm font-medium text-slate-700">Organização / Clube</label>
-              <input value={""} onChange={e=>setForm({...form, organization: e.target.value})}
+              <input value={""} onChange={e=>setFormData({...formData, organization: e.target.value})}
                 placeholder="Ex: Escola Básica X"
                 className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
                 data-testid="profile-org" />
@@ -73,14 +172,14 @@ export default function Profile() {
 
           <div>
             <label className="text-sm font-medium text-slate-700">Telefone (opcional)</label>
-            <input value={""} onChange={e=>setForm({...form, phone: e.target.value})}
+            <input value={""} onChange={e=>setFormData({...formData, phone: e.target.value})}
               className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
               data-testid="profile-phone" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-slate-700">Sobre mim</label>
-            <textarea value={""} onChange={e=>setForm({...form, bio: e.target.value})} rows={3}
+            <textarea value={""} onChange={e=>setFormData({...formData, bio: e.target.value})} rows={3}
               placeholder="Treinador há 5 anos, foco em desenvolvimento de jovens..."
               className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
               data-testid="profile-bio" />
@@ -97,7 +196,7 @@ export default function Profile() {
         </form>
 
         {/* Alterar password */}
-        <form onSubmit={""} className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4 self-start" data-testid="password-form">
+        <form onSubmit={handlePasswordSubmit} className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4 self-start" data-testid="password-form">
           <div className="flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-slate-700" />
             <h3 className="font-display text-xl font-bold">Segurança</h3>

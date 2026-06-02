@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { LOGO_URL } from "../js/constants";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sooner";
-import { insertUser } from "../js/users";
+import { Users } from "../js/users";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -55,7 +55,7 @@ export default function Register() {
       return;
     }
 
-    await insertUser({ email: formData.email, name: formData.name, password: formData.password });
+    await Users.insertUser({ email: formData.email, name: formData.name });
 
     console.warn("Conta criada com sucesso!");
     navigate("/menu");

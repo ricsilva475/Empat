@@ -63,6 +63,22 @@ export const Avaliacoes = {
 
   },
 
+  async getAvaliacoesByAtleta(athlete_id) {
+
+    const user = await getUser();
+    if (!user) throw new Error("Utilizador não autenticado")
+    const { data, error } = await supabase
+        .from('avaliacoes')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('athlete_id', athlete_id)
+        .order('created_at', { ascending: true })
+        if (error) throw error
+
+        //console.log("Avaliações para atleta", athlete_id, ":", data);
+         return data || [];
+  },
+
   async getLastAvaliacoes(athletes) {
 
     const user = await getUser();

@@ -71,7 +71,7 @@ export default function Assessments() {
     const scores = computeScores();
     setSaving(true);
     try {
-      await insertAvaliacao({ athlete_id: athleteId, empatia: scores.empatia, comunicacao: scores.comunicacao, resiliencia: scores.resiliencia, lideranca: scores.lideranca, notes });
+      await Avaliacoes.insert({ athlete_id: athleteId, empatia: scores.empatia, comunicacao: scores.comunicacao, resiliencia: scores.resiliencia, lideranca: scores.lideranca, notes });
       console.warn("Avaliação guardada com sucesso!");
       setAnswers({}); setNotes("");
     } catch (e) { console.error("Erro ao guardar avaliação:", e); }
