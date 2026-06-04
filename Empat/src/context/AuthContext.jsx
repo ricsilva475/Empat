@@ -16,27 +16,29 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Verificar sessão existente
     const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user || null);
-      } catch (err) {
-        console.error('Erro ao verificar sessão:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    console.log("SESSION:", session);
+    console.log("USER:", session?.user);
+
+    setUser(session?.user || null);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
     checkSession();
 
     // Listener para mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
-        if (event === 'SIGNED_OUT') {
-          setError(null);
-        }
-      }
-    );
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  console.log("AUTH EVENT:", event);
+  console.log("SESSION:", session);
+
+  setUser(session?.user || null);
+  });
 
     return () => subscription?.unsubscribe();
   }, []);
