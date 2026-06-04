@@ -15,6 +15,7 @@ import Profile from "./pages/Perfil";
 import Calendar from "./pages/Calendar";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 
 function Protected({ children }) {
