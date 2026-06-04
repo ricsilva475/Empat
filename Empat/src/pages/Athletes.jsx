@@ -4,6 +4,7 @@ import { SPORTS, SKILL_MAP } from "../js/constants";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, User } from "lucide-react";
 import { toast } from "react-toastify";
+import '../css/App.css';
 
 import { Atletas } from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
@@ -76,7 +77,7 @@ export default function Athletes() {
           <h1 className="font-display text-3xl font-bold tracking-tighter">Atletas</h1>
           <p className="text-slate-500 mt-1">{atletasNum} no total</p>
         </div>
-        <button onClick={() => setShowForm(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition" data-testid="add-athlete-btn">
+        <button onClick={() => setShowForm(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition btn-hover-orange" data-testid="add-athlete-btn">
           <Plus className="w-4 h-4" /> Novo atleta
         </button>
       </div>
@@ -110,8 +111,8 @@ export default function Athletes() {
             <textarea id="athlete-notes" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={2} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200" data-testid="athlete-notes"/>
           </div>
           <div className="md:col-span-2 flex gap-3 justify-end">
-            <button type="button" onClick={()=>setShowForm(false)} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold">Cancelar</button>
-            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold" data-testid="athlete-save">Guardar</button>
+            <button type="button" onClick={()=>setShowForm(false)} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold btn-hover-yellow">Cancelar</button>
+            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green" data-testid="athlete-save">Guardar</button>
           </div>
         </form>
       )}

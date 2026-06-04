@@ -3,20 +3,21 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LOGO_URL } from "../js/constants";
-import { LayoutDashboard, Users, ClipboardList, Dumbbell, NotebookPen, Sparkles, Target, CalendarDays, UserCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Dumbbell, NotebookPen, Sparkles, Target, CalendarDays, UserCircle, Menu, X, LogOut } from "lucide-react";
 
 const nav = [
   { to: "/menu", end: true, label: "Visão Geral", icon: LayoutDashboard },
   { to: "/menu/atletas", label: "Atletas", icon: Users },
   { to: "/menu/avaliacoes", label: "Avaliações", icon: ClipboardList },
   { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
+  { to: "/menu/perfil", label: "Perfil", icon: UserCircle },
   
 
   
 /*{ to: "/menu/observacoes", label: "Observações + IA", icon: NotebookPen },
   { to: "/menu/metas", label: "Metas", icon: Target },
   { to: "/menu/exercicios", label: "Banco de Exercícios", icon: Dumbbell },
-   { to: "/menu/perfil", label: "Perfil", icon: UserCircle }, 
+    
   
   { to: "/menu/planos", label: "Plano com IA", icon: Sparkles },
   
@@ -25,6 +26,7 @@ const nav = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   const nav_ = useNavigate();
 
   //console.warn("Navbar carregada");
@@ -74,15 +76,65 @@ export default function Layout() {
           <button
             onClick={async () => { await logout(); nav_( "/"); }}
             data-testid="logout-btn"
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2 transition mb-3">
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2 transition mb-3 btn-hover-red">
             <LogOut className="w-4 h-4" /> Sair
           </button>
         </div>
       </aside>
 
-        <main className="flex-1 p-6">
-            <Outlet />
-        </main>
+      <div className="md:hidden fixed top-5 left-6 z-50">
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="p-2 bg-white rounded-lg shadow border border-slate-200"
+      >
+        {menuOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <Menu className="w-6 h-6" />
+        )}
+      </button>
+    </div>
+
+    {menuOpen && (
+  <div className="md:hidden fixed top-20  left-4 z-40 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    <nav className="p-2">
+      {nav.map((n) => {
+        const Icon = n.icon;
+
+        return (
+          <NavLink
+            key={n.to}
+            to={n.to}
+            end={n.end}
+            className={linkCls}
+            onClick={() => setMenuOpen(false)}
+          >
+            <Icon className="w-4 h-4" />
+            {n.label}
+          </NavLink>
+        );
+      })}
+    </nav>
+
+    <div className="border-t border-slate-100 p-3">
+      <button
+        onClick={async () => {
+          setMenuOpen(false);
+          await logout();
+          nav_("/");
+        }}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2"
+      >
+        <LogOut className="w-4 h-4" />
+        Sair
+      </button>
+    </div>
+  </div>
+)}
+
+  <main className="flex-1 p-6 pt-20 md:pt-6">
+  <Outlet />
+  </main>
 
 
       

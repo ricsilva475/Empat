@@ -134,7 +134,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="rounded-3xl p-8 bg-gradient-to-br from-cyan-500 via-pink-500 to-orange-500 text-white">
+      <div className="rounded-3xl p-5 bg-gradient-to-br from-cyan-500 via-pink-500 to-orange-500 text-white">
         <div className="flex items-start justify-between gap-6 flex-wrap">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-xs font-bold">

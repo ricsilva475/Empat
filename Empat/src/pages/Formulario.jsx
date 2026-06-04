@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { toast } from "sooner";
 import { Questions } from "../js/forms";
+import { Link } from "react-router-dom";
 
 import { Atletas} from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
@@ -126,9 +127,12 @@ export default function Assessments() {
         <textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200" data-testid="assessment-notes"/>
       </div>
 
-      <div className="flex justify-end">
+      <div className="md:col-span-2 flex gap-3 justify-end">
+        <Link to="/menu" className="inline-block px-5 py-3 rounded-full bg-slate-100 font-semibold btn-hover-yellow">
+          Cancelar
+        </Link>
         <button onClick={submit} disabled={saving || !athleteId}
-          className="px-6 py-3 rounded-full bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white font-semibold" data-testid="assessment-save">
+          className="px-6 py-3 rounded-full bg-slate-900 text-white font-semibold btn-hover-green" data-testid="assessment-save">
           {saving ? "A guardar..." : "Guardar avaliação"}
         </button>
       </div>

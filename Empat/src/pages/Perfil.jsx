@@ -187,7 +187,7 @@ const onSubmit = async (e) => {
 
           <div className="flex justify-end">
             <button type="submit" disabled={""}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white font-semibold transition"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-900 text-white font-semibold transition btn-hover-green"
               data-testid="profile-save">
               {"" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Guardar alterações
@@ -229,7 +229,7 @@ const onSubmit = async (e) => {
 
           <div className="flex justify-end">
             <button type="submit" disabled={""}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 text-white font-semibold transition"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 text-white font-semibold transition btn-hover-green"
               data-testid="password-save">
               {"" ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
               Alterar password

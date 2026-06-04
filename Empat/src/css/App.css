@@ -182,3 +182,20 @@
     border-right-color: var(--border);
   }
 }
+
+.btn-hover-orange:hover {
+  background-color: rgb(242, 133, 0);
+}
+
+.btn-hover-yellow:hover {
+  background-color: rgb(253, 224, 71);
+}
+
+.btn-hover-green:hover {
+  background-color: rgb(132, 204, 22);
+}
+
+.btn-hover-red:hover {
+  background-color: rgb(76, 12, 36);
+  color: white;
+}

@@ -55,7 +55,7 @@ export default function CalendarPage() {
           <h1 className="font-display text-3xl font-bold tracking-tighter">Calendário de treinos</h1>
           <p className="text-slate-500 mt-1">Planeia sessões com foco de soft skill.</p>
         </div>
-        <button onClick={()=>setShow(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold" data-testid="add-session-btn">
+        <button onClick={()=>setShow(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold btn-hover-orange" data-testid="add-session-btn">
           <Plus className="w-4 h-4"/> Nova sessão
         </button>
       </div>
@@ -91,8 +91,8 @@ export default function CalendarPage() {
             <textarea value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={2} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"/>
           </div>
           <div className="md:col-span-2 flex justify-end gap-3">
-            <button type="button" onClick={()=>setShow(false)} className="px-5 py-2.5 rounded-full bg-slate-100">Cancelar</button>
-            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold" data-testid="session-save">Guardar</button>
+            <button type="button" onClick={()=>setShow(false)} className="px-5 py-2.5 rounded-full bg-slate-100 btn-hover-yellow">Cancelar</button>
+            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold btn-hover-green" data-testid="session-save">Guardar</button>
           </div>
         </form>
       )}
