@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../js/constants";
-import { Plus, Trash2, CalendarDays } from "lucide-react";
+import { Plus, Trash2, CalendarDays, Pencil } from "lucide-react";
 import { Classes } from "../js/classes";
 
 export default function CalendarPage() {
@@ -53,7 +53,7 @@ export default function CalendarPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tighter">Calendário de treinos</h1>
-          <p className="text-slate-500 mt-1">Planeia sessões com foco de soft skill.</p>
+          <p className="text-slate-500 mt-1">Planeia sessões de treino com foco em soft skills.</p>
         </div>
         <button onClick={()=>setShow(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold btn-hover-orange" data-testid="add-session-btn">
           <Plus className="w-4 h-4"/> Nova sessão
@@ -121,6 +121,7 @@ export default function CalendarPage() {
                           <span className="text-slate-500 capitalize">{s.sport}</span>
                         </div>
                       </div>
+                      <button onClick={() => startEdit(s)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-athlete-${s.id}`}><Pencil className="w-4 h-4" /></button>
                       <button onClick={()=>del(s.id)} className="p-2 text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
                     </div>
                   );

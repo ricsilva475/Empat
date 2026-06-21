@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { SPORTS, SKILL_MAP } from "../js/constants";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, User } from "lucide-react";
+import { Plus, Trash2, User, Pencil } from "lucide-react";
 import { toast } from "react-toastify";
 import '../css/App.css';
 
@@ -134,6 +134,7 @@ export default function Athletes() {
                     <div className="text-xs text-slate-500 capitalize">{a.sport} · {a.age} anos · {a.team || "Sem equipa"}</div>
                   </div>
                 </Link>
+                <button onClick={() => startEdit(a)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-athlete-${a.id}`}><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => deleteAtleta(a.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-athlete-${a.id}`}><Trash2 className="w-4 h-4"/></button>
               </div>
               <div className="mt-4 grid grid-cols-4 gap-1.5">

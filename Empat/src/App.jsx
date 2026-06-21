@@ -13,6 +13,7 @@ import Planner from "./pages/Planner";
 import Goals from "./pages/Goals";
 import Profile from "./pages/Perfil";
 import Calendar from "./pages/Calendar";
+import Groups from "./pages/Groups";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/menu/perfil" element={<Profile />} />
           <Route path="/menu/atletas" element={<Athletes />} />
           <Route path="/menu/atletas/:id" element={<AthleteDetail />} />
+          <Route path="/menu/turmas" element={<Groups />} />
           <Route path="/menu/avaliacoes" element={<Assessments />} />
           <Route path="/menu/exercicios" element={<Exercises />} />
           <Route path="/menu/observacoes" element={<Observations />} />

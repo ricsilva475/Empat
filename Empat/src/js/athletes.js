@@ -72,6 +72,7 @@ export const Atletas = {
 }
 
 export const deleteAtleta = {
+  
   async delete(id) {
     
     const user = await getUser();

@@ -3,16 +3,15 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LOGO_URL } from "../js/constants";
-import { LayoutDashboard, Users, ClipboardList, Dumbbell, NotebookPen, Sparkles, Target, CalendarDays, UserCircle, Menu, X, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, Dumbbell, NotebookPen, Sparkles, Target, CalendarDays, UserCircle, Menu, X, LogOut, UserRound } from "lucide-react";
 
 const nav = [
   { to: "/menu", end: true, label: "Visão Geral", icon: LayoutDashboard },
   { to: "/menu/atletas", label: "Atletas", icon: Users },
+  { to: "/menu/turmas", label: "Turmas", icon: Users },
   { to: "/menu/avaliacoes", label: "Avaliações", icon: ClipboardList },
   { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
-  { to: "/menu/perfil", label: "Perfil", icon: UserCircle },
-  
-
+  { to: "/menu/perfil", label: "Perfil", icon: UserRound },
   
 /*{ to: "/menu/observacoes", label: "Observações + IA", icon: NotebookPen },
   { to: "/menu/metas", label: "Metas", icon: Target },
