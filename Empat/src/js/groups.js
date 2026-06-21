@@ -7,87 +7,66 @@ const getUser = async () => {
 
 export const Grupos = {
 
-    async getGroupDetails(groupId) {
-
-    const { data: group, error: groupError } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('id', groupId)
-        .single()
-    if (groupError) throw groupError
-
-    const { data: links, error: linksError } = await supabase
-        .from('group_athletes')
-        .select('athlete_id')
-        .eq('group_id', groupId)
-    if (linksError) throw linksError
-
-    return {
-        ...group,
-        athlete_ids: links.map(l => l.athlete_id),
-    }
-
-    },
-
     async getAllData() {
+    const user = await getUser();
 
-    const { data: groups, error: groupsError } = await supabase
+    if (!user) throw new Error("Utilizador não autenticado")
+
+    const { data, error } = await supabase
         .from('groups')
         .select('*')
-        .order('created_at', { ascending: false })
-    if (groupsError) throw groupsError
+        .eq('user_id', user.id)
 
-    const { data: links, error: linksError } = await supabase
-        .from('group_athletes')
-        .select('group_id, athlete_id')
-    if (linksError) throw linksError
-
-    return groups.map(g => ({
-        ...g,
-        athlete_ids: links.filter(l => l.group_id === g.id).map(l => l.athlete_id),
-    }))
-    
+        if (error) throw error
+        //console.log("Dados dos grupos:", data);
+        return data
     },
 
-    async insert(form) {
+    async getGroupDetails(groupId) {
+        const { data, error } = await supabase
+            .from('groups_athletes')
+            .select('*')
+            .eq('id', groupId)
+            .single()
+        if (error) throw error
+        return data
+    },
 
-    const { athlete_ids, ...groupFields } = form
+    async insert(data) {
+
+    const user = await getUser();
+
+    if (!user) throw new Error("Utilizador não autenticado")
+
     const { data: group, error } = await supabase
         .from('groups')
-        .insert(groupFields)
+        .insert({
+            name: data.name,
+            sport: data.sport,
+            focus_skill: data.focus_skill,
+            notes: data.description,
+            user_id: user.id,
+        })
         .select()
         .single()
+
     if (error) throw error
 
-    if (athlete_ids?.length) {
-        const rows = athlete_ids.map(athlete_id => ({ group_id: group.id, athlete_id }))
-        const { error: linkError } = await supabase.from('group_athletes').insert(rows)
-        if (linkError) throw linkError
+    if (data.athlete_ids && data.athlete_ids.length > 0) {
+        const groupAthletes = data.athlete_ids.map(athlete_id => ({
+            group_id: group.id,
+            athlete_id: athlete_id,
+        }))
+
+        const { error: athletesError } = await supabase
+            .from('group_athletes')
+            .insert(groupAthletes)
+
+        if (athletesError) throw athletesError
     }
+
     return group
 
-    },
-
-    async update(groupId, form) {
-
-    const { athlete_ids, ...groupFields } = form
-    const { error } = await supabase
-        .from('groups')
-        .update(groupFields)
-        .eq('id', groupId)
-    if (error) throw error
-
-    const { error: delError } = await supabase
-        .from('group_athletes')
-        .delete()
-        .eq('group_id', groupId)
-    if (delError) throw delError
-
-    if (athlete_ids?.length) {
-        const rows = athlete_ids.map(athlete_id => ({ group_id: groupId, athlete_id }))
-        const { error: insError } = await supabase.from('group_athletes').insert(rows)
-        if (insError) throw insError
-    }
     },
 
     
