@@ -17,6 +17,8 @@ import Groups from "./pages/Groups";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 function Protected({ children }) {
@@ -30,6 +32,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+      <ToastContainer />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -50,5 +53,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    
   );
 }

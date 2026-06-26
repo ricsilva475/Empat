@@ -10,6 +10,7 @@ export const SOFT_SKILLS = [
 export const SKILL_MAP = Object.fromEntries(SOFT_SKILLS.map(s => [s.id, s]));
 
 export const SPORTS = ["futebol", "basquetebol", "voleibol", "andebol", "atletismo", "natação", "ténis", "todos"];
+export const FUNCTIONS = ["Treinador", "Encarregado de Educação"];
 
 export const HERO_IMG = "https://images.pexels.com/photos/8941650/pexels-photo-8941650.jpeg";
 export const FEATURE_AI = "https://images.pexels.com/photos/10347865/pexels-photo-10347865.jpeg";

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { User, Mail, Save, KeyRound, Loader2, ClipboardList, Users as UsersIcon, NotebookPen, CalendarDays } from "lucide-react";
 import { Users } from "../js/users";
+import { FUNCTIONS } from "../js/constants";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -156,10 +157,15 @@ const onSubmit = async (e) => {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-slate-700">Função</label>
-              <input value={""} onChange={e=>setFormData({...formData, role: e.target.value})}
-                placeholder="Ex: coach"
-                className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
-                data-testid="profile-sport" />
+              <select
+                value={formData.role}
+                onChange={e => setFormData({ ...formData, role: e.target.value })}
+                className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+                data-testid="profile-role"
+              >
+                {FUNCTIONS.filter(s=>s!== "Selecione uma função").map(s=><option key={s} value={s} className="capitalize">{s}</option>)}
+              </select>
+
             </div>
             <div>
               <label className="text-sm font-medium text-slate-700">Organização / Clube</label>

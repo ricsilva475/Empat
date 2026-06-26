@@ -16,6 +16,7 @@ export const Atletas = {
       .from('athletes')
       .select('*')
       .eq('user_id', user.id)
+      .eq('eliminated', false);
 
     if (error) throw error
     //console.log("Dados dos atletas:", data);
@@ -59,6 +60,28 @@ export const Atletas = {
   return data
   },
 
+  async update(id, data) {
+    const user = await getUser();
+
+    if (!user) throw new Error("Utilizador não autenticado");
+
+    const { error } = await supabase
+      .from("athletes")
+      .update({
+        name: data.name,
+        age: data.age,
+        sport: data.sport,
+        team: data.team,
+        position: data.position,
+        notes: data.notes,
+      })
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) throw error;
+
+  },
+
   async getAtletasCount() {
     const { count, error } = await supabase
       .from('athletes')
@@ -69,10 +92,6 @@ export const Atletas = {
   return count ?? 0
   },
 
-}
-
-export const deleteAtleta = {
-  
   async delete(id) {
     
     const user = await getUser();
@@ -80,12 +99,15 @@ export const deleteAtleta = {
     if (!user) throw new Error("Utilizador não autenticado")
 
     const { error } = await supabase
-      .from('athletes')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id)
+  .from('athletes')
+  .update({ eliminated: true })
+  .eq('id', id)
+  .eq('user_id', user.id);
 
     if (error) throw error
-  },
+  }
+
 }
+
+
 

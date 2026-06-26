@@ -8,12 +8,12 @@ import '../css/App.css';
 
 import { Atletas } from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
-
 export default function Athletes() {
   const [list, setList] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" });
   const [atletasNum, setAtletasNum] = useState("");
+  const [editingAthlete, setEditingAthlete] = useState(null);
   
   useEffect(() => {
     
@@ -51,25 +51,93 @@ export default function Athletes() {
 
   }, []);
 
+  const loadAtletas = async () => {
+    try {
+      const data = await Atletas.getAllData();
+      const numAtletas = await Atletas.getAtletasCount();
+
+      setAtletasNum(numAtletas);
+      setList(data);
+
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const startEdit = (athlete) => {
+
+    setEditingAthlete(athlete);
+
+    setForm({
+      name: athlete.name,
+      age: athlete.age,
+      sport: athlete.sport,
+      team: athlete.team,
+      position: athlete.position,
+      notes: athlete.notes
+    });
+
+    setShowForm(true);
+  };
+
+  const deleteAtleta = async (id) => {
+    try {
+      await Atletas.delete(id);
+
+      // Atualiza a lista
+      setList(list.filter(a => a.id !== id));
+      toast.success("Atleta eliminado com sucesso!");
+
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao eliminar atleta!");
+    }
+  };
 
   const submit = async (e) => {
-  e.preventDefault()
+  e.preventDefault();
+
   try {
-    await Atletas.insert({
-      ...form,
-      age: parseInt(form.age),
-    })
-    console.warn("Atleta criado com sucesso!")
-    setShowForm(false)
-    setForm({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" })
-    window.location.reload()
-    getAtletas()
+
+    if (editingAthlete) {
+
+      await Atletas.update(editingAthlete.id, {
+        ...form,
+        age: parseInt(form.age),
+      });
+
+      toast.success("Atleta atualizado com sucesso!");
+
+    } else {
+
+      await Atletas.insert({
+        ...form,
+        age: parseInt(form.age),
+      });
+
+      toast.success("Atleta criado com sucesso!");
+    }
+
+    setEditingAthlete(null);
+    setShowForm(false);
+
+    setForm({
+      name: "",
+      age: 12,
+      sport: "futebol",
+      team: "",
+      position: "",
+      notes: ""
+    });
+
+    
+     await loadAtletas();
 
   } catch (e) {
-    console.error(e)
+    console.error(e);
+    toast.error("Erro ao guardar atleta");
   }
-}
-
+};
   return (
     <div className="space-y-6" data-testid="athletes-page">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -112,7 +180,7 @@ export default function Athletes() {
           </div>
           <div className="md:col-span-2 flex gap-3 justify-end">
             <button type="button" onClick={()=>setShowForm(false)} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold btn-hover-yellow">Cancelar</button>
-            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green" data-testid="athlete-save">Guardar</button>
+            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green" data-testid="athlete-save">{editingAthlete ? "Atualizar" : "Guardar"}</button>
           </div>
         </form>
       )}
