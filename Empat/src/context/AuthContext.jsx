@@ -19,8 +19,8 @@ export function AuthProvider({ children }) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
 
-    console.log("SESSION:", session);
-    console.log("USER:", session?.user);
+    //console.log("SESSION:", session);
+    //console.log("USER:", session?.user);
 
     setUser(session?.user || null);
   } catch (err) {
@@ -34,8 +34,8 @@ export function AuthProvider({ children }) {
 
     // Listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-  console.log("AUTH EVENT:", event);
-  console.log("SESSION:", session);
+  //console.log("AUTH EVENT:", event);
+  //console.log("SESSION:", session);
 
   setUser(session?.user || null);
   });

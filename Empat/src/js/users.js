@@ -2,12 +2,12 @@ import { supabase } from '../context/AuthContext';
 
 export const Users = {
   
-  async insertUser(userData) {
+  async insertUser(data) {
     const { error } = await supabase
       .from('users')
       .insert({
-        name: userData.name,
-        email: userData.email,
+        name: data.name,
+        email: data.email,
         role: 'coach'
       })
 
@@ -25,15 +25,15 @@ export const Users = {
     return data
   },
 
-  async updateUser(userData) {
+  async updateUser(data) {
     const { error } = await supabase
       .from('users')
       .update({
-        name: userData.name,
-        email: userData.email,
-        role: userData.role
+        name: data.name,
+        email: data.email,
+        role: data.role
       })
-      .eq('id', userData.id)
+      .eq('id', data.id)
     if (error) throw error
   }
 
