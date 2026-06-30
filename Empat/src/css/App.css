@@ -204,3 +204,15 @@ main{
   background-color: rgb(76, 12, 36);
   color: white;
 }
+
+
+.form-card{
+    display: flex;
+    gap: 55px;
+    align-items: center;
+}
+@media (max-width: 961px) {
+  .form-card{
+    justify-content: center;
+  }
+}
