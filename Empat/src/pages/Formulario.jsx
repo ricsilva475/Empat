@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
+import '../css/App.css';
 
 const SKILLS = [
   {
@@ -53,6 +54,11 @@ function calcularMedia(ini, fim) {
   if (a !== null) return a;
   if (b !== null) return b;
   return null;
+}
+
+function isInvalidValue(v) {
+  const n = parseFloat(v);
+  return v !== "" && (isNaN(n) || n < 1 || n > 5);
 }
 
 export default function Assessments() {
@@ -127,7 +133,7 @@ export default function Assessments() {
       </div>
 
       <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
-        <div className="grid grid-cols-[160px_1fr_110px_110px_100px] gap-0 border-b border-slate-200 bg-slate-50 px-6 py-3">
+        <div className="hidden min-[961px]:grid grid-cols-[160px_1fr_110px_110px_100px] gap-0 border-b border-slate-200 bg-slate-50 px-6 py-3">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
             Soft Skill
           </div>
@@ -152,54 +158,55 @@ export default function Assessments() {
 
           return (
             <div
-              key={s.id}
-              className={`grid grid-cols-[160px_1fr_110px_110px_100px] gap-0 px-6 py-4 items-center ${
-                idx < SKILLS.length - 1 ? "border-b border-slate-100" : ""
-              }`}
-              data-testid={`skill-row-${s.id}`}
-            >
-              <div className="text-sm font-semibold text-slate-800 pr-4">
+  key={s.id}
+  className="
+    border-b border-slate-100
+    p-4
+    min-[961px]:grid
+    min-[961px]:grid-cols-[160px_1fr_110px_110px_100px]
+    min-[961px]:items-center
+"
+>
+              <div className="font-semibold">
                 {s.name}
               </div>
 
-              <div className="text-sm text-slate-600 pr-6 leading-snug">
+             <div className="text-sm text-slate-600 mt-2 min-[961px]:mt-0">
                 {s.behavior}
               </div>
-
-              <div className="flex justify-center">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="—"
-                  value={ini}
-                  onChange={(e) => setAns(s.id, "ini", e.target.value)}
-                  className="w-16 text-center px-2 py-2 rounded-xl border border-slate-200 text-sm bg-white"
-                  data-testid={`input-${s.id}-ini`}
-                />
+              <div className="form-card">
+              <div className="mt-4 min-[961px]:mt-0">
+                <label className="block min-[961px]:hidden text-xs text-slate-500 mb-1">
+                  Início (1 a 5)
+                </label>
+                <input type="text" inputMode="decimal" placeholder="—" value={ini} onChange={(e) => setAns(s.id, "ini", e.target.value)} className={`
+  w-16 text-center px-2 py-2 rounded-xl border text-sm bg-white
+  ${isInvalidValue(ini) ? "border-red-500 ring-1 ring-red-200" : "border-slate-200"}
+`} data-testid={`input-${s.id}-ini`}/>
               </div>
 
-              <div className="flex justify-center">
+              <div className="mt-3 min-[961px]:mt-0">
+                <label className="block min-[961px]:hidden text-xs text-slate-500 mb-1">
+                  Fim (1 a 5)
+                </label>
                 <input
                   type="text"
                   inputMode="decimal"
                   placeholder="—"
                   value={fim}
                   onChange={(e) => setAns(s.id, "fim", e.target.value)}
-                  className="w-16 text-center px-2 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+                  className={`
+                    w-16 text-center px-2 py-2 rounded-xl border text-sm bg-white
+                    ${isInvalidValue(fim) ? "border-red-500 ring-1 ring-red-200" : "border-slate-200"}
+                  `}
                   data-testid={`input-${s.id}-fim`}
                 />
               </div>
 
-              <div className="text-center">
-                <span className="text-xs text-slate-400 mr-1">Média:</span>
-                <span
-                  className={`text-sm font-semibold ${
-                    media !== null ? "text-slate-900" : "text-slate-300"
-                  }`}
-                >
-                  {media !== null ? media.toFixed(1) : "—"}
-                </span>
+              <div className="mt-3 min-[961px]:mt-0 text-center min-[961px]:text-center">
+                Média: {media ?? "—"}
               </div>
+            </div>
             </div>
           );
         })}
