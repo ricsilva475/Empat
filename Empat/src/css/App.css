@@ -208,7 +208,7 @@ main{
 
 .form-card{
     display: flex;
-    gap: 55px;
+    gap: 45px;
     align-items: center;
 }
 @media (max-width: 961px) {
