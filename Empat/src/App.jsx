@@ -14,6 +14,7 @@ import Goals from "./pages/Goals";
 import Profile from "./pages/Perfil";
 import Calendar from "./pages/Calendar";
 import Groups from "./pages/Groups";
+import Ola from "./pages/Ola";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -29,12 +30,15 @@ function Protected({ children }) {
 }
 
 export default function App() {
+
+  const isAdmin = window.location.hostname.startsWith("admin.");
+
   return (
     <AuthProvider>
       <BrowserRouter>
       <ToastContainer />
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={isAdmin ? <Ola /> : <Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/menu" element={<Protected><Layout /></Protected>}>
