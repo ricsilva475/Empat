@@ -14,6 +14,7 @@ export default function Groups() {
   const [editingGroup, setEditingGroup] = useState(null); // group object or null
   const [form, setForm] = useState({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
 
+
   useEffect(() => {
       
       async function AtletasData() {
@@ -29,7 +30,18 @@ export default function Groups() {
       async function GruposData() {
         try {
           const data = await Grupos.getAllData();
-          setGroups(data);
+
+          const groupsWithCount = await Promise.all(
+            data.map(async (group) => ({
+              ...group,
+              atletasCount: await Grupos.getAtletasCountByGroup(group.id)
+            }))
+          );
+
+          console.log("group, ", groupsWithCount);
+
+          setGroups(groupsWithCount);
+
         } catch (e) {
           console.error(e);
         }
@@ -83,32 +95,32 @@ export default function Groups() {
 };
 
   const submit = async (e) => {
-  e.preventDefault();
+      e.preventDefault();
 
-  if (!form.name.trim()) {
-    toast.error("Indica o nome da turma");
-    return;
-  }
+      if (!form.name.trim()) {
+        toast.error("Indica o nome da turma");
+        return;
+      }
 
-  try {
-    if (editingGroup) {
-      await Grupos.update(editingGroup.id, form);
-      toast.success("Grupo editado com sucesso!");
-    } else {
-      await Grupos.insert(form);
-      toast.success("Grupo criado com sucesso!");
-    }
+      try {
+        if (editingGroup) {
+          await Grupos.update(editingGroup.id, form);
+          toast.success("Grupo editado com sucesso!");
+        } else {
+          await Grupos.insert(form);
+          toast.success("Grupo criado com sucesso!");
+        }
 
-    const data = await Grupos.getAllData();
-    setGroups(data);
+        const data = await Grupos.getAllData();
+        setGroups(data);
 
-    resetForm();
+        resetForm();
 
-  } catch (e) {
-    console.error("ERRO AO GUARDAR GRUPO:", e);
-    toast.error("Erro ao guardar grupo");
-  }
-};
+      } catch (e) {
+        console.error("ERRO AO GUARDAR GRUPO:", e);
+        toast.error("Erro ao guardar grupo");
+      }
+  };
  
   return (
     <div className="space-y-6" data-testid="groups-page">
@@ -227,7 +239,7 @@ export default function Groups() {
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                       {g.sport && <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{g.sport}</span>}
                       {sk && <span className={`px-2 py-0.5 rounded-full font-bold ${sk.soft}`}>{sk.name}</span>}
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 font-semibold">{} atletas</span>
+                      <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 font-semibold">{g.atletasCount} atletas</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">

@@ -5,6 +5,8 @@ const getUser = async () => {
   return user;
 };
 
+
+
 export const Grupos = {
 
     async getAllData() {
@@ -108,12 +110,14 @@ export const Grupos = {
         const { count, error } = await supabase
             .from('group_athletes')
             .select('*', { count: 'exact', head: true })
-            .eq('group_id', id) // Alinhado com o nome correto da coluna
+            .eq('group_id', id)
             .eq('ativo', true);
 
+        console.log(id, count, error);
         if (error) throw error;
         return count ?? 0;
     },
+    
 
     
 
