@@ -19,6 +19,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { Toaster } from "sonner";
 import "react-toastify/dist/ReactToastify.css";
 
 
@@ -37,6 +38,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
       <ToastContainer />
+      <Toaster />
         <Routes>
           <Route path="/" element={isAdmin ? <RecursosP /> : <Landing />} />
           <Route path="/login" element={<Login />} />
@@ -47,7 +49,7 @@ export default function App() {
           <Route path="/menu/atletas" element={<Athletes />} />
           <Route path="/menu/atletas/:id" element={<AthleteDetail />} />
           <Route path="/menu/turmas" element={<Groups />} />
-          <Route path="/menu/avaliacoes" element={<Assessments />} />
+          <Route path="/menu/avaliacoes_individual" element={<Assessments />} />
           <Route path="/menu/exercicios" element={<Exercises />} />
           <Route path="/menu/observacoes" element={<Observations />} />
           <Route path="/menu/planos" element={<Planner />} />

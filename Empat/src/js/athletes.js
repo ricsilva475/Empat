@@ -86,6 +86,7 @@ export const Atletas = {
     const { count, error } = await supabase
       .from('athletes')
       .select('*', { count: 'exact', head: true })
+      .not('eliminated', 'is', true)
 
   if (error) throw error
 

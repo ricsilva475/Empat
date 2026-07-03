@@ -47,6 +47,9 @@ export default function AthleteDetail() {
   empatia: a.empatia,
   lideranca: a.lideranca,
   resiliencia: a.resiliencia,
+  motivacao: a.motivacao,
+  tomadecisao: a.tomadecisao,
+  gestaostress: a.gestaostress,
 }));
 
   return (
