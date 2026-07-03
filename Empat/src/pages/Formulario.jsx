@@ -31,12 +31,12 @@ const SKILLS = [
     behavior: "Apoia colegas e respeita adversários/árbitros.",
   },
   {
-    id: "toma_decisao",
+    id: "tomadecisao",
     name: "Tomada de Decisão",
     behavior: "Escolhe a melhor opção sob pressão de forma rápida e segura.",
   },
   {
-    id: "gestao_stress",
+    id: "gestaostress",
     name: "Gestão de Stress",
     behavior: "Mantém a calma e não bloqueia sob pressão.",
   },

@@ -14,7 +14,7 @@ import Goals from "./pages/Goals";
 import Profile from "./pages/Perfil";
 import Calendar from "./pages/Calendar";
 import Groups from "./pages/Groups";
-import Ola from "./pages/Ola";
+import RecursosP from "./pages/RecursosP";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -38,7 +38,7 @@ export default function App() {
       <BrowserRouter>
       <ToastContainer />
         <Routes>
-          <Route path="/" element={isAdmin ? <Ola /> : <Landing />} />
+          <Route path="/" element={isAdmin ? <RecursosP /> : <Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/menu" element={<Protected><Layout /></Protected>}>
@@ -53,6 +53,7 @@ export default function App() {
           <Route path="/menu/planos" element={<Planner />} />
           <Route path="/menu/metas" element={<Goals />} />
           <Route path="/menu/calendario" element={<Calendar />} />
+          <Route path="/menu/recursos" element={<RecursosP />} />
           </Route>
         </Routes>
       </BrowserRouter>

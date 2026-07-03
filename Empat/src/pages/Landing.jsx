@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { LOGO_URL, SOFT_SKILLS, HERO_IMG, FEATURE_AI, FEATURE_EX } from "../js/constants";
-import { Sparkles, ClipboardList, Dumbbell, NotebookPen, Target, CalendarDays, ArrowRight, Brain, Eye, BarChart3, Heart, MessageCircle, Shield, Crown } from "lucide-react";
+import { Sparkles, ClipboardList, Dumbbell, NotebookPen, Target, CalendarDays, ArrowRight, Brain, Eye, BarChart3, Heart, MessageCircle, Shield, Crown, Icon } from "lucide-react";
 
 const skillIcons = { empatia: Heart, comunicacao: MessageCircle, resiliencia: Shield, lideranca: Crown };
 
@@ -231,7 +231,7 @@ export default function Landing() {
             return (
               <div key={s.id} className="rounded-3xl bg-white border border-slate-200 p-6 hover:-translate-y-1 transition shadow-sm">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-4" style={{background: s.color}}>
-                  <Icon className="w-6 h-6" />
+                  
                 </div>
                 <h3 className="font-display text-xl font-bold">{s.name}</h3>
                 <p className="mt-2 text-sm text-slate-600">

@@ -205,14 +205,6 @@ export default function Athletes() {
                 <button onClick={() => startEdit(a)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-athlete-${a.id}`}><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => deleteAtleta(a.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-athlete-${a.id}`}><Trash2 className="w-4 h-4"/></button>
               </div>
-              <div className="mt-4 grid grid-cols-4 gap-1.5">
-                {Object.entries(a.skills || {}).map(([k,v]) => (
-                  <div key={k} className="text-center">
-                    <div className="h-1.5 rounded-full mb-1" style={{background: SKILL_MAP[k]?.color || "#94A3B8", opacity: Math.max(0.2, v/5)}} />
-                    <div className="text-[10px] text-slate-500 truncate">{SKILL_MAP[k]?.name}</div>
-                  </div>
-                ))}
-              </div>
               <Link to={`/menu/atletas/${a.id}`} className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700">Ver perfil →</Link>
             </div>
           ))}

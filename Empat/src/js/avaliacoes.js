@@ -16,6 +16,9 @@ export const Avaliacoes = {
       .insert({
         athlete_id: data.athlete_id,
         user_id: user.id,
+        motivacao: data.motivacao,
+        tomadecisao: data.tomadecisao,
+        gestaostress: data.gestaostress,
         empatia: data.empatia,
         comunicacao: data.comunicacao,
         resiliencia: data.resiliencia,

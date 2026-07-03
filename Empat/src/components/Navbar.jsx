@@ -11,6 +11,8 @@ const nav = [
   { to: "/menu/turmas", label: "Turmas", icon: Users },
   { to: "/menu/avaliacoes", label: "Avaliações individuais", icon: ClipboardList },
   { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
+  { to: "/menu/recursos", label: "Recursos Pedagógicos", icon: NotebookPen },
+
   { to: "/menu/perfil", label: "Perfil", icon: UserRound },
   
 
