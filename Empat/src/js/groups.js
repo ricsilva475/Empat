@@ -117,6 +117,19 @@ export const Grupos = {
         if (error) throw error;
         return count ?? 0;
     },
+
+    async getAthletesByGroup(groupId) {
+        const { data, error } = await supabase
+            .from("group_athletes")
+            .select("athlete_id")
+            .eq("group_id", groupId)
+            .eq("ativo", true);
+
+        if (error) throw error;
+
+        return data.map(item => item.athlete_id);
+    },
+    
     
 
     

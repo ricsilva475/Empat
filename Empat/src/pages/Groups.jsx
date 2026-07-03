@@ -38,8 +38,6 @@ export default function Groups() {
             }))
           );
 
-          console.log("group, ", groupsWithCount);
-
           setGroups(groupsWithCount);
 
         } catch (e) {
@@ -65,15 +63,18 @@ export default function Groups() {
     }));
   };
 
-  const startEdit = (group) => {
+  const startEdit = async (group) => {
     setEditingGroup(group);
+
+    const athleteIds = await Grupos.getAthletesByGroup(group.id);
 
     setForm({
       name: group.name,
       sport: group.sport,
       focus_skill: group.focus_skill,
       description: group.notes || "",
-      athlete_ids: group.athlete_ids || [],
+      athlete_ids: athleteIds,
+
     });
 
     setShowForm(true);
@@ -85,13 +86,25 @@ export default function Groups() {
     await Grupos.delete(id);
 
     const data = await Grupos.getAllData();
-    setGroups(data);
+    loadGroups();
     toast.success("Grupo eliminado com sucesso!");
 
   } catch (e) {
     console.error(e);
     toast.error("Erro ao eliminar grupo!");
   }
+};
+const loadGroups = async () => {
+  const data = await Grupos.getAllData();
+
+  const groupsWithCount = await Promise.all(
+    data.map(async (group) => ({
+      ...group,
+      atletasCount: await Grupos.getAtletasCountByGroup(group.id),
+    }))
+  );
+
+  setGroups(groupsWithCount);
 };
 
   const submit = async (e) => {
@@ -112,7 +125,7 @@ export default function Groups() {
         }
 
         const data = await Grupos.getAllData();
-        setGroups(data);
+        loadGroups();
 
         resetForm();
 
