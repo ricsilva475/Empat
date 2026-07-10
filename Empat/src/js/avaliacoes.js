@@ -29,6 +29,28 @@ export const Avaliacoes = {
     if (error) throw error
   },
 
+  async insert2(data) {
+    const user = await getUser();
+
+    if (!user) throw new Error("Utilizador não autenticado")
+    const { error } = await supabase
+      .from('avaliacoes_group')
+      .insert({
+        group_id: data.group_id,
+        user_id: user.id,
+        motivacao: data.motivacao,
+        tomadecisao: data.tomadecisao,
+        gestaostress: data.gestaostress,
+        empatia: data.empatia,
+        comunicacao: data.comunicacao,
+        resiliencia: data.resiliencia,
+        lideranca: data.lideranca,
+        notes: data.notes,
+      })
+
+    if (error) throw error
+  },
+
   async getAllData() {
 
     const user = await getUser();

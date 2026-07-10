@@ -6,7 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import Layout from "./components/Navbar";
 import Athletes from "./pages/Athletes";
 import AthleteDetail from "./pages/AthletesDetail";
-import Assessments from "./pages/Formulario";
+import Assessments from "./pages/Formulario_individual";
+import ColectiveAssessments from "./pages/Formulario_turmas";
 import Exercises from "./pages/Exercises";
 import Observations from "./pages/Observations";
 import Planner from "./pages/Planner";
@@ -49,7 +50,8 @@ export default function App() {
           <Route path="/menu/atletas" element={<Athletes />} />
           <Route path="/menu/atletas/:id" element={<AthleteDetail />} />
           <Route path="/menu/turmas" element={<Groups />} />
-          <Route path="/menu/avaliacoes_individual" element={<Assessments />} />
+          <Route path="/menu/avaliacao_individual" element={<Assessments />} />
+          <Route path="/menu/avaliacoes_coletivas" element={<ColectiveAssessments />} />
           <Route path="/menu/exercicios" element={<Exercises />} />
           <Route path="/menu/observacoes" element={<Observations />} />
           <Route path="/menu/planos" element={<Planner />} />

@@ -12,8 +12,7 @@ export default function Landing() {
       <div className="blob bg-cyan-300 w-[500px] h-[500px] -top-40 -left-40\" />
       <div className="blob bg-pink-300 w-[400px] h-[400px] top-20 -right-20\" />
       <div className="blob bg-lime-300 w-[350px] h-[350px] top-[900px] -left-20\" />
-
-      {/* NAV */}
+      
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3" data-testid="nav-logo">
@@ -33,7 +32,6 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* HERO */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-24">
         <div className="grid lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7 reveal">
@@ -89,7 +87,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* VALOR — porquê soft skills */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
         <div className="rounded-3xl bg-slate-900 text-white p-10 md:p-14 grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
@@ -119,7 +116,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* COMO A IA FUNCIONA */}
       <section id="ia" className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
         <div className="text-center mb-14">
           <div className="text-xs uppercase tracking-[0.2em] text-orange-500 font-bold">O diferencial</div>
@@ -154,7 +150,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* COMPORTAMENTO REAL */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           <div>
@@ -191,7 +186,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* EXEMPLO CONCRETO */}
       <section id="exemplo" className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
         <div className="text-center mb-12">
           <div className="text-xs uppercase tracking-[0.2em] text-lime-600 font-bold">Exemplo prático</div>
@@ -220,7 +214,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 4 SOFT SKILLS */}
       <section id="skills" className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tighter">As 4 soft skills do core Empat</h2>
@@ -246,7 +239,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* FEATURES BENTO */}
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tighter">Tudo o que precisas num só sítio</h2>
@@ -283,7 +275,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
         <div className="rounded-3xl bg-gradient-to-br from-cyan-500 via-pink-500 to-orange-500 p-[1.5px]">
           <div className="rounded-3xl bg-white p-10 md:p-14 text-center">

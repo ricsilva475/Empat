@@ -9,7 +9,8 @@ const nav = [
   { to: "/menu", end: true, label: "Visão Geral", icon: LayoutDashboard },
   { to: "/menu/atletas", label: "Atletas", icon: Users },
   { to: "/menu/turmas", label: "Turmas", icon: Users },
-  { to: "/menu/avaliacoes_individual", label: "Avaliações individuais", icon: ClipboardList },
+  { to: "/menu/avaliacao_individual", label: "Avaliações individuais", icon: ClipboardList },
+  { to: "/menu/avaliacoes_coletivas", label: "Avaliações colectivas", icon: ClipboardList },
   { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
   { to: "/menu/recursos", label: "Recursos Pedagógicos", icon: NotebookPen },
  
