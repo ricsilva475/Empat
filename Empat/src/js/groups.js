@@ -69,6 +69,20 @@ export const Grupos = {
 
     },
 
+    async getAtletasCountByGroup(id) {
+    const { count, error } = await supabase
+        .from('group_athletes')
+        .select('*', { count: 'exact', head: true })
+        .eq('group_id', id)
+        .eq('ativo', true);
+
+    if (error) throw error;
+
+    console.warn("Número de atletas no grupo", id, ":", count);
+    
+    return count ?? 0;
+}
+
     
 
 }

@@ -9,7 +9,7 @@ export default function Groups() {
   const [groups, setGroups] = useState([]);
   const [athletes, setAthletes] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(null); // group object or null
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
 
   useEffect(() => {
@@ -27,6 +27,8 @@ export default function Groups() {
       async function GruposData() {
         try {
           const data = await Grupos.getAllData();
+          //const groupathletes = await Grupos.getAtletasCountByGroup();
+          //console.warn("Dados dos grupos carregados:", groupathletes);
           setGroups(data);
         } catch (e) {
           console.error(e);

@@ -39,17 +39,17 @@ export default function AthleteDetail() {
   if (!data) return <div className="text-slate-500\">A carregar...</div>;
 
   const chartData = (avaliacoes || []).map(a => ({
-  date: new Date(a.created_at).toLocaleDateString("pt-PT", {
-    day: "2-digit",
-    month: "short",
-  }),
-  comunicacao: a.comunicacao,
-  empatia: a.empatia,
-  lideranca: a.lideranca,
-  resiliencia: a.resiliencia,
-  motivacao: a.motivacao,
-  tomadecisao: a.tomadecisao,
-  gestaostress: a.gestaostress,
+    date: new Date(a.created_at).toLocaleDateString("pt-PT", {
+      day: "2-digit",
+      month: "short",
+    }),
+    comunicacao: a.comunicacao,
+    empatia: a.empatia,
+    lideranca: a.lideranca,
+    resiliencia: a.resiliencia,
+    motivacao: a.motivacao,
+    tomadecisao: a.tomadecisao,
+    gestaostress: a.gestaostress,
 }));
 
   return (
