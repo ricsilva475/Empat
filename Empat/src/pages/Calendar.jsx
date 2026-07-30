@@ -4,11 +4,13 @@ import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../js/constants";
 import { Plus, Trash2, CalendarDays, Pencil } from "lucide-react";
 import { Classes } from "../js/classes";
 
+import { toast } from "react-toastify";
+
 export default function CalendarPage() {
   const [sessions, setSessions] = useState([]);
   const [show, setShow] = useState(false);
   const [form, setForm] = useState({ title: "", date: "", sport: "futebol", focus_skill: "comunicacao", team: "", notes: "" });
-
+  const [editingClass, setEditingClass] = useState(null);  
   useEffect(() => {
       
       async function ClassesData() {
@@ -23,18 +25,90 @@ export default function CalendarPage() {
       ClassesData();
     }, []);
 
+  const del = async (id) => {
+    try {
+      await Classes.deleteClass(id);
+      await loadClasses();
+      toast.success("Grupo eliminado com sucesso!");
+
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao eliminar grupo!");
+    }
+  };
+
+  const startEdit = (classe) => {
+
+    setEditingClass(classe);
+
+    setForm({
+      title: classe.title,
+      date: classe.time.slice(0,16),
+      sport: classe.sport,
+      team: classe.team || "",
+      focus_skill: classe.focus_skill,
+      notes: classe.notes || ""
+    });
+
+    setShow(true);
+  };
+
+  const loadClasses = async () => {
+    const data = await Classes.getAllData();
+  
+    const classesWithCount = await Promise.all(
+      data.map(async (classe) => ({
+        ...classe
+      }))
+    );
+  
+    setSessions(classesWithCount);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
+
     try {
-    await Classes.insert({
-            ...form,
-            date: new Date(form.date).toISOString(),
-    })
-      console.log("Aula criada:", form);
-      setShow(false); 
-      setForm({ title: "", date: "", sport: "futebol", focus_skill: "comunicacao", team: "", notes: "" });
-      window.location.reload();
-    } catch (e) { console.log("Erro: ", e); }
+
+      if (editingClass) {
+
+        await Classes.update(editingClass.id, {
+          ...form,
+          date: new Date(form.date).toISOString(),
+        });
+
+        toast.success("Sessão atualizada com sucesso!");
+
+      } else {
+
+        await Classes.insert({
+          ...form,
+          date: new Date(form.date).toISOString(),
+        });
+
+        toast.success("Sessão criada com sucesso!");
+      }
+
+
+      setEditingClass(null);
+      setShow(false);
+
+      setForm({
+        title: "",
+        date: "",
+        sport: "futebol",
+        focus_skill: "comunicacao",
+        team: "",
+        notes: ""
+      });
+
+      await loadClasses();
+
+
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao guardar sessão!");
+    }
   };
 
   const grouped = sessions.reduce((acc, s) => {
@@ -92,7 +166,7 @@ export default function CalendarPage() {
           </div>
           <div className="md:col-span-2 flex justify-end gap-3">
             <button type="button" onClick={()=>setShow(false)} className="px-5 py-2.5 rounded-full bg-slate-100 btn-hover-yellow">Cancelar</button>
-            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold btn-hover-green" data-testid="session-save">Guardar</button>
+            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold btn-hover-green" data-testid="session-save">{editingClass ? "Atualizar" : "Guardar"}</button>
           </div>
         </form>
       )}
@@ -122,7 +196,8 @@ export default function CalendarPage() {
                         </div>
                       </div>
                       <button onClick={() => startEdit(s)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-athlete-${s.id}`}><Pencil className="w-4 h-4" /></button>
-                      <button onClick={()=>del(s.id)} className="p-2 text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
+                      <button onClick={()=>del(s.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`del-${s.id}`}><Trash2 className="w-4 h-4"/></button>
+
                     </div>
                   );
                 })}

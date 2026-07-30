@@ -35,6 +35,8 @@ export const Classes = {
     const { data, error } = await supabase
         .from('classes')
         .select('*')
+        .eq('user_id', user.id)
+        .eq('eliminated', false);
     
         if (error) throw error
 
@@ -42,6 +44,42 @@ export const Classes = {
 
         return data
     },
+
+    async deleteClass(id) {
+
+        const user = await getUser();
+    
+        if (!user) throw new Error("Utilizador não autenticado")
+    
+        const { error } = await supabase
+            .from('classes')
+            .update({ eliminated: true })
+            .eq('id', id)
+            .eq('user_id', user.id);
+    
+        if (error) throw error
+    },
+    async update(id, data) {
+        const user = await getUser();
+    
+        if (!user) throw new Error("Utilizador não autenticado");
+    
+        const { error } = await supabase
+          .from("classes")
+          .update({
+            title: data.title,
+            time: data.date,
+            sport: data.sport,
+            team: data.team,
+            focus_skill: data.focus_skill,
+            notes: data.notes
+          })
+          .eq("id", id)
+          .eq("user_id", user.id);
+    
+        if (error) throw error;
+    
+      },
 
 
 
