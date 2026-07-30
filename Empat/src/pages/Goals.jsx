@@ -30,7 +30,7 @@ export default function Goals() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tighter">Metas</h1>
-          <p className="text-slate-500 mt-1">Objetivos com prazo para cada atleta.</p>
+          <p className="text-slate-500 mt-1">Objetivos para cada atleta e respetivo prazo.</p>
         </div>
         <button onClick={()=>setShow(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold" data-testid="add-goal-btn">
           <Plus className="w-4 h-4"/> Nova meta

@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { SPORTS, SKILL_MAP } from "../js/constants";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, User, Pencil } from "lucide-react";
 import { toast } from "react-toastify";
 import '../css/App.css';
+import { confirmToast } from "../components/DeleteToast";
 
 import { Atletas } from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
@@ -15,54 +16,47 @@ export default function Athletes() {
   const [atletasNum, setAtletasNum] = useState("");
   const [editingAthlete, setEditingAthlete] = useState(null);
   
-  useEffect(() => {
-    
-    async function AtletasData() {
-      try {
-        const data = await Atletas.getAllData();
-        const numAtletas = await Atletas.getAtletasCount();
-        setAtletasNum(numAtletas);
-        setList(data);
-      } catch (e) {
-        console.error(e);
-      }
+  const loadAtletas = useCallback(async () => {
+    try {
+      const data = await Atletas.getAllData();
+      const numAtletas = await Atletas.getAtletasCount();
+      setAtletasNum(numAtletas);
+      setList(data);
+    } catch (e) {
+      console.error(e);
     }
-    AtletasData();
+  }, []);
 
-    async function AvaliacoesData() {
-      try {
-        const data = await Avaliacoes.getAllData();
-        setList(l => {
-          return l.map(a => ({
-            ...a,
-            skills: data.filter(av => av.athlete_id === a.id).reduce((acc, av) => {
+  const loadAvaliacoes = useCallback(async () => {
+    try {
+      const data = await Avaliacoes.getAllData();
+      setList(l =>
+        l.map(a => ({
+          ...a,
+          skills: data
+            .filter(av => av.athlete_id === a.id)
+            .reduce((acc, av) => {
               for (const skill of Object.keys(SKILL_MAP)) {
                 acc[skill] = Math.max(acc[skill] || 0, av[skill] || 0);
               }
               return acc;
             }, {})
-          }))
-        });
-      } catch (e) {
-        console.error(e);
-      }    
-    }
-    AvaliacoesData();
-
-  }, []);
-
-  const loadAtletas = async () => {
-    try {
-      const data = await Atletas.getAllData();
-      const numAtletas = await Atletas.getAtletasCount();
-
-      setAtletasNum(numAtletas);
-      setList(data);
-
+        }))
+      );
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+
+    async function loadAll() {
+      await loadAtletas();
+      await loadAvaliacoes();
+    }
+    loadAll();
+
+  }, [loadAtletas, loadAvaliacoes]);
 
   const startEdit = (athlete) => {
 
@@ -82,13 +76,15 @@ export default function Athletes() {
 
   const deleteAtleta = async (id) => {
     try {
+      confirmToast("Eliminar atleta?", async () => {
       await Atletas.delete(id);
 
       // Atualiza a lista
       setList(list.filter(a => a.id !== id));
       toast.success("Atleta eliminado com sucesso!");
-
-    } catch (e) {
+    });
+    
+  } catch (e) {
       console.error(e);
       toast.error("Erro ao eliminar atleta!");
     }
@@ -130,7 +126,6 @@ export default function Athletes() {
       notes: ""
     });
 
-    
      await loadAtletas();
 
   } catch (e) {
@@ -204,14 +199,6 @@ export default function Athletes() {
                 </Link>
                 <button onClick={() => startEdit(a)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-athlete-${a.id}`}><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => deleteAtleta(a.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-athlete-${a.id}`}><Trash2 className="w-4 h-4"/></button>
-              </div>
-              <div className="mt-4 grid grid-cols-4 gap-1.5">
-                {Object.entries(a.skills || {}).map(([k,v]) => (
-                  <div key={k} className="text-center">
-                    <div className="h-1.5 rounded-full mb-1" style={{background: SKILL_MAP[k]?.color || "#94A3B8", opacity: Math.max(0.2, v/5)}} />
-                    <div className="text-[10px] text-slate-500 truncate">{SKILL_MAP[k]?.name}</div>
-                  </div>
-                ))}
               </div>
               <Link to={`/menu/atletas/${a.id}`} className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700">Ver perfil →</Link>
             </div>

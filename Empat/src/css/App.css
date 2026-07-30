@@ -205,10 +205,15 @@ main{
   color: white;
 }
 
+@media (min-width: 962px) {
+  .form-card{
+    margin-left: 20px !important ;
+  }
+}
 
 .form-card{
     display: flex;
-    gap: 55px;
+    gap: 45px;
     align-items: center;
 }
 @media (max-width: 961px) {

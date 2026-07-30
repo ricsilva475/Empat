@@ -6,7 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import Layout from "./components/Navbar";
 import Athletes from "./pages/Athletes";
 import AthleteDetail from "./pages/AthletesDetail";
-import Assessments from "./pages/Formulario";
+import Assessments from "./pages/Formulario_individual";
+import ColectiveAssessments from "./pages/Formulario_turmas";
 import Exercises from "./pages/Exercises";
 import Observations from "./pages/Observations";
 import Planner from "./pages/Planner";
@@ -14,10 +15,12 @@ import Goals from "./pages/Goals";
 import Profile from "./pages/Perfil";
 import Calendar from "./pages/Calendar";
 import Groups from "./pages/Groups";
+import RecursosP from "./pages/RecursosP";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { Toaster } from "sonner";
 import "react-toastify/dist/ReactToastify.css";
 
 
@@ -29,12 +32,16 @@ function Protected({ children }) {
 }
 
 export default function App() {
+
+  const isAdmin = window.location.hostname.startsWith("admin.");
+
   return (
     <AuthProvider>
       <BrowserRouter>
       <ToastContainer />
+      <Toaster />
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={isAdmin ? <RecursosP /> : <Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/menu" element={<Protected><Layout /></Protected>}>
@@ -43,12 +50,14 @@ export default function App() {
           <Route path="/menu/atletas" element={<Athletes />} />
           <Route path="/menu/atletas/:id" element={<AthleteDetail />} />
           <Route path="/menu/turmas" element={<Groups />} />
-          <Route path="/menu/avaliacoes" element={<Assessments />} />
+          <Route path="/menu/avaliacao_individual" element={<Assessments />} />
+          <Route path="/menu/avaliacoes_coletivas" element={<ColectiveAssessments />} />
           <Route path="/menu/exercicios" element={<Exercises />} />
           <Route path="/menu/observacoes" element={<Observations />} />
           <Route path="/menu/planos" element={<Planner />} />
           <Route path="/menu/metas" element={<Goals />} />
           <Route path="/menu/calendario" element={<Calendar />} />
+          <Route path="/menu/recursos" element={<RecursosP />} />
           </Route>
         </Routes>
       </BrowserRouter>
