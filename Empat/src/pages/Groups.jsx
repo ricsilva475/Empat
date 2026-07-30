@@ -5,12 +5,15 @@ import { Plus, Trash2, Users, Save, X, Pencil, Check } from "lucide-react";
 import { Atletas } from "../js/athletes";
 import { Grupos } from "../js/groups";
 
+import { toast } from "react-toastify";
+
 export default function Groups() {
   const [groups, setGroups] = useState([]);
   const [athletes, setAthletes] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const [editingGroup, setEditingGroup] = useState(null); // group object or null
   const [form, setForm] = useState({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
+
 
   useEffect(() => {
       
@@ -27,9 +30,16 @@ export default function Groups() {
       async function GruposData() {
         try {
           const data = await Grupos.getAllData();
-          //const groupathletes = await Grupos.getAtletasCountByGroup();
-          //console.warn("Dados dos grupos carregados:", groupathletes);
-          setGroups(data);
+
+          const groupsWithCount = await Promise.all(
+            data.map(async (group) => ({
+              ...group,
+              atletasCount: await Grupos.getAtletasCountByGroup(group.id)
+            }))
+          );
+
+          setGroups(groupsWithCount);
+
         } catch (e) {
           console.error(e);
         }
@@ -38,32 +48,9 @@ export default function Groups() {
   
     }, []);
 
-    
-    const edit = (group) => {
-    setEditing(group);
-    setForm({
-      name: group.name || "",
-      sport: group.sport || "",
-      focus_skill: group.focus_skill || "",
-      description: group.description || "",
-      athlete_ids: group.athlete_ids || [],
-    });
-    setShowForm(true);
-  };
-
-  const delet = async (id) => {
-    try {
-      await Grupos.remove(id);
-      const data = await Grupos.getAllData();
-      setGroups(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const resetForm = () => {
     setForm({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
-    setEditing(null);
+    setEditingGroup(null);
     setShowForm(false);
   };
 
@@ -76,21 +63,76 @@ export default function Groups() {
     }));
   };
 
+  const startEdit = async (group) => {
+    setEditingGroup(group);
+
+    const athleteIds = await Grupos.getAthletesByGroup(group.id);
+
+    setForm({
+      name: group.name,
+      sport: group.sport,
+      focus_skill: group.focus_skill,
+      description: group.notes || "",
+      athlete_ids: athleteIds,
+
+    });
+
+    setShowForm(true);
+  };
+  
+
+  const deleteGrupo = async (id) => {
+  try {
+    await Grupos.delete(id);
+
+    const data = await Grupos.getAllData();
+    loadGroups();
+    toast.success("Grupo eliminado com sucesso!");
+
+  } catch (e) {
+    console.error(e);
+    toast.error("Erro ao eliminar grupo!");
+  }
+};
+const loadGroups = async () => {
+  const data = await Grupos.getAllData();
+
+  const groupsWithCount = await Promise.all(
+    data.map(async (group) => ({
+      ...group,
+      atletasCount: await Grupos.getAtletasCountByGroup(group.id),
+    }))
+  );
+
+  setGroups(groupsWithCount);
+};
+
   const submit = async (e) => {
-    e.preventDefault();
-    if (!form.name.trim()) { toast.error("Indica o nome da turma"); return; }
-    try {
-      if (editing) {
-        await Grupos.update(editing.id, { ...form });
-      } else {
-        await Grupos.insert({ ...form });
+      e.preventDefault();
+
+      if (!form.name.trim()) {
+        toast.error("Indica o nome da turma");
+        return;
       }
-      const data = await Grupos.getAllData();
-      setGroups(data);
-      resetForm();
-    } catch (e) {
-      console.error(e);
-    }
+
+      try {
+        if (editingGroup) {
+          await Grupos.update(editingGroup.id, form);
+          toast.success("Grupo editado com sucesso!");
+        } else {
+          await Grupos.insert(form);
+          toast.success("Grupo criado com sucesso!");
+        }
+
+        const data = await Grupos.getAllData();
+        loadGroups();
+
+        resetForm();
+
+      } catch (e) {
+        console.error("ERRO AO GUARDAR GRUPO:", e);
+        toast.error("Erro ao guardar grupo");
+      }
   };
  
   return (
@@ -110,7 +152,7 @@ export default function Groups() {
       {showForm && (
         <form onSubmit={submit} className="rounded-2xl bg-white border border-slate-200 p-6 space-y-5" data-testid="group-form">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl font-bold">{editing ? "Editar turma" : "Nova turma"}</h2>
+            <h2 className="font-display text-xl font-bold">{editingGroup ? "Editar turma" : "Nova turma"}</h2>
             <button type="button" onClick={resetForm} className="p-2 rounded-lg hover:bg-slate-100" data-testid="group-cancel">
               <X className="w-4 h-4" />
             </button>
@@ -186,7 +228,7 @@ export default function Groups() {
           <div className="flex justify-end gap-3">
             <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 font-semibold btn-hover-yellow transition">Cancelar</button>
             <button type="submit" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green transition" data-testid="group-save">
-              {editing ? "Guardar alterações" : "Criar turma"}
+              {editingGroup ? "Guardar alterações" : "Criar turma"}
             </button>
           </div>
         </form>
@@ -210,12 +252,15 @@ export default function Groups() {
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                       {g.sport && <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{g.sport}</span>}
                       {sk && <span className={`px-2 py-0.5 rounded-full font-bold ${sk.soft}`}>{sk.name}</span>}
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 font-semibold">{groupAthletes.length} atletas</span>
+                      <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 font-semibold">{g.atletasCount} atletas</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => edit(g)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-group-${g.id}`}><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => delet(g.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-group-${g.id}`}><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => startEdit(g)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-group-${g.id}`}><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => deleteGrupo(g.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-group-${g.id}`}><Trash2 className="w-4 h-4" /></button>
+                    
+                    
+      
                   </div>
                 </div>
 
