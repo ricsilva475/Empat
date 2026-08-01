@@ -16,37 +16,39 @@ export default function Groups() {
 
 
   useEffect(() => {
-      
-      async function AtletasData() {
-        try {
-          const data = await Atletas.getAllData();
-          setAthletes(data);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      AtletasData();
+  async function loadData() {
+    try {
+      const athletesData = await Atletas.getAllData();
+      setAthletes(athletesData);
 
-      async function GruposData() {
-        try {
-          const data = await Grupos.getAllData();
+      const groupsData = await Grupos.getAllData();
 
-          const groupsWithCount = await Promise.all(
-            data.map(async (group) => ({
-              ...group,
-              atletasCount: await Grupos.getAtletasCountByGroup(group.id)
-            }))
-          );
+      const groupsWithCount = await Promise.all(
+        groupsData.map(async (group) => {
 
-          setGroups(groupsWithCount);
+          const athleteIds = await Grupos.getAthletesByGroup(group.id);
 
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      GruposData();
-  
-    }, []);
+          const groupAthletes = athletesData
+            .filter(a => athleteIds.includes(a.id))
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+          return {
+            ...group,
+            atletasCount: groupAthletes.length,
+            groupAthletes
+          };
+        })
+      );
+
+      setGroups(groupsWithCount);
+
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  loadData();
+}, []);
 
   const resetForm = () => {
     setForm({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
@@ -97,11 +99,20 @@ export default function Groups() {
 const loadGroups = async () => {
   const data = await Grupos.getAllData();
 
-  const groupsWithCount = await Promise.all(
-    data.map(async (group) => ({
-      ...group,
-      atletasCount: await Grupos.getAtletasCountByGroup(group.id),
-    }))
+   const groupsWithCount = await Promise.all(
+    data.map(async (group) => {
+      const athleteIds = await Grupos.getAthletesByGroup(group.id);
+
+      const groupAthletes = athletes
+        .filter(a => athleteIds.includes(a.id))
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      return {
+        ...group,
+        atletasCount: groupAthletes.length,
+        groupAthletes
+      };
+    })
   );
 
   setGroups(groupsWithCount);
@@ -243,7 +254,7 @@ const loadGroups = async () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {groups.map(g => {
             const sk = g.focus_skill ? SKILL_MAP[g.focus_skill] : null;
-            const groupAthletes = athletes.filter(a => (g.athlete_ids || []).includes(a.id));
+            const groupAthletes = g.groupAthletes || [];
             return (
               <div key={g.id} className="rounded-2xl bg-white border border-slate-200 p-5 hover:-translate-y-0.5 transition" data-testid={`group-card-${g.id}`}>
                 <div className="flex items-start justify-between gap-3">
@@ -267,22 +278,32 @@ const loadGroups = async () => {
                 {g.description && <p className="mt-3 text-sm text-slate-600 line-clamp-2">{g.description}</p>}
 
                 {groupAthletes.length > 0 ? (
-                  <div className="mt-4">
+                  <div className="mt-4 flex items-center">
+                    
                     <div className="flex -space-x-2">
-                      {groupAthletes.slice(0, 6).map(a => (
-                        <div key={a.id} title={a.name} className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 border-2 border-white flex items-center justify-center text-white font-bold text-xs">
-                          {a.name[0]}
+                      {groupAthletes.slice(0, 5).map(a => (
+                        <div
+                          key={a.id}
+                          title={a.name}
+                          className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 border-2 border-white flex items-center justify-center text-white font-bold text-xs"
+                        >
+                          {a.name[0]?.toUpperCase()}
                         </div>
                       ))}
-                      {groupAthletes.length > 6 && (
-                        <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-slate-600 font-bold text-xs">
-                          +{groupAthletes.length - 6}
-                        </div>
-                      )}
                     </div>
+
+
+                    {groupAthletes.length > 5 && (
+                      <div className="ml-2 text-xs font-semibold text-slate-600">
+                        +{groupAthletes.length - 5}
+                      </div>
+                    )}
+
                   </div>
                 ) : (
-                  <p className="mt-4 text-xs text-slate-400 italic">Sem atletas associados</p>
+                  <p className="mt-4 text-xs text-slate-400 italic">
+                    Sem atletas associados
+                  </p>
                 )}
               </div>
             );

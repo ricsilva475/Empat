@@ -21,7 +21,6 @@ export const Grupos = {
         .eq("eliminated", false);
 
         if (error) throw error
-        //console.log("Dados dos grupos:", data);
         return data
     },
 
