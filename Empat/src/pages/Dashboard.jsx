@@ -29,6 +29,7 @@ export default function Dashboard() {
       const athletesIds = await Atletas.getAllData();
       const avaliacoes = await Avaliacoes.getLastAvaliacoes(athletesIds);
       const averageTeamValue = { team_averages: calcTeamAverages(avaliacoes) };
+      const averageAthleteValue = calcTeamAverages(avaliacoes);
       setStats(averageTeamValue);
       setAvaliacoesNum(numAvaliacoes);
     }
@@ -87,7 +88,7 @@ export default function Dashboard() {
         <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-display text-xl font-bold">Média da equipa por soft skill</h2>
+              <h2 className="font-display text-xl font-bold">Média dos atletas por soft skill</h2>
               <p className="text-sm text-slate-500">Valores atuais (0–5) baseados nas últimas avaliações.</p>
             </div>
           </div>
@@ -131,6 +132,32 @@ export default function Dashboard() {
               </li>
             ))}
           </ul>
+        </div>
+        <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-xl font-bold">Média das turmas por soft skill</h2>
+              <p className="text-sm text-slate-500">Valores atuais (0–5) baseados nas últimas avaliações.</p>
+            </div>
+          </div>
+          <div className="mt-4 h-80">
+            <ResponsiveContainer>
+              <RadarChart data={radarData} outerRadius="70%">
+                <PolarGrid stroke="#E2E8F0" />
+                <PolarAngleAxis dataKey="skill" tick={{ fill: "#475569", fontSize: 13, fontFamily: "Figtree" }} />
+                <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fill: "#94A3B8", fontSize: 11 }} />
+                <Radar name="Equipa" dataKey="value" stroke="#06B6D4" fill="#06B6D4" fillOpacity={0.35} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-2 grid grid-cols-4 gap-2">
+            {SOFT_SKILLS.map(s => (
+              <div key={s.id} className="text-center">
+                <div className="text-xs text-slate-500">{s.name}</div>
+                <div className="text-lg font-display font-bold" style={{color: s.color}}>{stats?.team_averages?.[s.id] ?? 0}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

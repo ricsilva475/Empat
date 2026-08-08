@@ -1,6 +1,16 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
+const loginWithGoogle = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/menu`,
+    },
+  });
+  return { data, error };
+};
+
 const AuthContext = createContext();
 
 const supabase = createClient(
@@ -97,7 +107,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, signup, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
