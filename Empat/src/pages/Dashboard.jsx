@@ -133,7 +133,7 @@ export default function Dashboard() {
             ))}
           </ul>
         </div>
-        <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
+        {/*<div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-display text-xl font-bold">Média das turmas por soft skill</h2>
@@ -158,7 +158,7 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="rounded-3xl p-5 bg-gradient-to-br from-cyan-500 via-pink-500 to-orange-500 text-white">
