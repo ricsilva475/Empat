@@ -2,19 +2,22 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { SPORTS, SKILL_MAP } from "../js/constants";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, User, Pencil } from "lucide-react";
+import { Plus, Trash2, User, Pencil, Check } from "lucide-react";
 import { toast } from "react-toastify";
 import '../css/App.css';
 import { confirmToast } from "../components/DeleteToast";
 
 import { Atletas } from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
+import { Grupos} from "../js/groups";
+
 export default function Athletes() {
   const [list, setList] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "" });
+  const [form, setForm] = useState({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "", group_ids: []});
   const [atletasNum, setAtletasNum] = useState("");
   const [editingAthlete, setEditingAthlete] = useState(null);
+  const [grupos, setGrupos] = useState([]);
   
   const loadAtletas = useCallback(async () => {
     try {
@@ -26,6 +29,13 @@ export default function Athletes() {
       console.error(e);
     }
   }, []);
+
+  const selectGroup = (id) => {
+    setForm(prev => ({
+      ...prev,
+      group_id: prev.group_id === id ? null : id
+    }));
+  };
 
   const loadAvaliacoes = useCallback(async () => {
     try {
@@ -53,12 +63,15 @@ export default function Athletes() {
     async function loadAll() {
       await loadAtletas();
       await loadAvaliacoes();
+      await loadGrupos();
     }
     loadAll();
 
   }, [loadAtletas, loadAvaliacoes]);
 
-  const startEdit = (athlete) => {
+  const startEdit = async (athlete) => {
+
+    const groupIds = await Atletas.getGroupsByAthlete(athlete.id);
 
     setEditingAthlete(athlete);
 
@@ -68,11 +81,27 @@ export default function Athletes() {
       sport: athlete.sport,
       team: athlete.team,
       position: athlete.position,
-      notes: athlete.notes
+      notes: athlete.notes,
+      group_ids: groupIds
     });
 
     setShowForm(true);
   };
+
+  const toggleGroup = (id) => {
+    setForm(prev => ({
+      ...prev,
+      group_ids: prev.group_ids.includes(id)
+        ? prev.group_ids.filter(g => g !== id)
+        : [...prev.group_ids, id]
+    }));
+  };
+
+  const loadGrupos = useCallback(async () => {
+      const data = await Grupos.getAllData();
+      console.log("teste ", data);
+      setGrupos(data);
+  }, []);
 
   const deleteAtleta = async (id) => {
     try {
@@ -113,18 +142,18 @@ export default function Athletes() {
 
       toast.success("Atleta criado com sucesso!");
     }
-
-    setEditingAthlete(null);
-    setShowForm(false);
-
     setForm({
       name: "",
       age: 12,
       sport: "futebol",
       team: "",
       position: "",
-      notes: ""
+      notes: "",
+      group_ids: []
     });
+
+    setEditingAthlete(null);
+    setShowForm(false);
 
      await loadAtletas();
 
@@ -172,6 +201,63 @@ export default function Athletes() {
           <div className="md:col-span-2">
             <label className="text-sm font-medium text-slate-700">Notas</label>
             <textarea id="athlete-notes" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={2} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200" data-testid="athlete-notes"/>
+          </div>
+          <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="font-semibold text-slate-800 text-sm">
+                Turmas do atleta
+              </div>
+
+              <div className="text-xs text-slate-500">
+                {form.group_ids.length} selecionada(s) · {grupos.length} disponíveis
+              </div>
+            </div>
+
+            {grupos.length === 0 ? (
+              <div className="text-sm text-slate-500 py-6 text-center">
+                Ainda não existem turmas.
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-auto pr-1">
+                {grupos.map(grupo => {
+                  const checked = form.group_ids.includes(grupo.id);
+
+                  return (
+                    <label
+                      key={grupo.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${
+                        checked
+                          ? "bg-cyan-50 border-cyan-300"
+                          : "bg-white border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleGroup(grupo.id)}
+                        className="w-4 h-4 accent-cyan-600"
+                      />
+
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm">
+                        {grupo.name[0]}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold truncate">
+                          {grupo.name}
+                        </div>
+
+                        <div className="text-xs text-slate-500 capitalize truncate">
+                          {grupo.sport}
+                        </div>
+                      </div>
+
+                      {checked && <Check className="w-4 h-4 text-cyan-600" />}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <div className="md:col-span-2 flex gap-3 justify-end">
             <button type="button" onClick={()=>setShowForm(false)} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold btn-hover-yellow">Cancelar</button>

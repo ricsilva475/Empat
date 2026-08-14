@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
-import { INDIVIDUAL_SKILLS } from "../js/constants";
+import { INDIVIDUAL_SKILLS, SOFT_SKILLS } from "../js/constants";
 import { LIKERT_SCALE } from "../js/constants";
 import '../css/App.css';
 
@@ -32,6 +32,11 @@ export default function Assessments() {
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
   const [showScale, setShowScale] = useState(false);
+  const [skillId, setSkillId] = useState("");
+
+  const filteredSkills = skillId
+  ? INDIVIDUAL_SKILLS.filter(skill => skill.id === skillId)
+  : INDIVIDUAL_SKILLS;
 
   useEffect(() => {
     async function getAtletas() {
@@ -79,22 +84,54 @@ export default function Assessments() {
       </div>
 
       <div className="rounded-2xl bg-white border border-slate-200 p-5">
-        <label className="text-sm font-medium text-slate-700 block mb-1.5">
-          Lista de Atletas
-        </label>
-        <select
-          value={athleteId}
-          onChange={(e) => setAthleteId(e.target.value)}
-          className="w-full md:w-96 px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
-          data-testid="assessment-athlete-select"
-        >
-          <option value="">— Escolhe um atleta —</option>
-          {athletes.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </select>
+        <div className="grid md:grid-cols-2 gap-4">
+
+          <div>
+            <label className="text-sm font-medium text-slate-700 block mb-1.5">
+              Lista de Atletas
+            </label>
+
+            <select
+              value={athleteId}
+              onChange={(e) => setAthleteId(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+              data-testid="assessment-athlete-select"
+            >
+              <option value="">— Escolhe um atleta —</option>
+
+              {athletes.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+
+            </select>
+          </div>
+
+
+          <div>
+            <label className="text-sm font-medium text-slate-700 block mb-1.5">
+              Soft Skills
+            </label>
+
+            <select
+              value={skillId}
+              onChange={(e) => setSkillId(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+              data-testid="assessment-skill-select"
+            >
+              <option value="">— Escolhe uma Soft Skill —</option>
+
+              {SOFT_SKILLS.map((skill) => (
+                <option key={skill.id} value={skill.id}>
+                  {skill.name}
+                </option>
+              ))}
+
+            </select>
+          </div>
+
+        </div>
       </div>
 
     <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
@@ -116,10 +153,14 @@ export default function Assessments() {
         </div>
       </div>
 
-      {INDIVIDUAL_SKILLS.map((s, idx) => {
+      
+
+      {filteredSkills.map((s, idx) => {
         const ini = answers[`${s.id}-ini`] ?? "";
         const fim = answers[`${s.id}-fim`] ?? "";
         const media = calcularMedia(ini, fim);
+
+        
 
         return (
           <div
