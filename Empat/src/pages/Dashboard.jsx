@@ -69,14 +69,16 @@ export default function Dashboard() {
         <p className="text-slate-500 mt-1">O que está a acontecer com os teus atletas.</p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {CARDS.map((c, i) => {
           const Icon = c.icon;
+
           return (
             <div key={i} className="rounded-2xl bg-white border border-slate-200 p-5">
               <div className={`w-11 h-11 rounded-xl ${c.bg} ${c.color} flex items-center justify-center`}>
                 <Icon className="w-5 h-5" />
               </div>
+
               <div className="mt-4 text-3xl font-display font-bold">{c.value}</div>
               <div className="text-sm text-slate-500">{c.label}</div>
             </div>
