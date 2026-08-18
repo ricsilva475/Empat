@@ -13,6 +13,7 @@ export default function Groups() {
   const [showForm, setShowForm] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null); // group object or null
   const [form, setForm] = useState({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
+  const [athleteGroups, setAthleteGroups] = useState([]);
 
 
   useEffect(() => {
@@ -20,6 +21,9 @@ export default function Groups() {
     try {
       const athletesData = await Atletas.getAllData();
       setAthletes(athletesData);
+
+      const athleteGroupsData = await Grupos.getAthletesWithGroups();
+      setAthleteGroups(athleteGroupsData);
 
       const groupsData = await Grupos.getAllData();
 
@@ -87,7 +91,9 @@ export default function Groups() {
   try {
     await Grupos.delete(id);
 
-    const data = await Grupos.getAllData();
+    //const data = await Grupos.getAllData();
+    const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
+    setAthleteGroups(updatedAthleteGroups);
     loadGroups();
     toast.success("Grupo eliminado com sucesso!");
 
@@ -135,7 +141,10 @@ const loadGroups = async () => {
           toast.success("Grupo criado com sucesso!");
         }
 
-        const data = await Grupos.getAllData();
+        //const data = await Grupos.getAllData();
+
+        const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
+        setAthleteGroups(updatedAthleteGroups);
         loadGroups();
 
         resetForm();
@@ -145,6 +154,50 @@ const loadGroups = async () => {
         toast.error("Erro ao guardar grupo");
       }
   };
+
+  const availableAthletes = athletes.filter((athlete) => {
+
+    // Só atletas do desporto selecionado
+    if (athlete.sport !== form.sport) {
+      return false;
+    }
+
+    // Procurar se este atleta pertence a alguma turma ativa
+    const athleteGroup = athleteGroups.find(
+      ag => String(ag.athlete_id) === String(athlete.id)
+    );
+
+    // Não pertence a nenhuma turma
+    if (!athleteGroup) {
+      return true;
+    }
+
+    // Se estamos a editar, permitir os atletas
+    // que já pertencem à própria turma
+    if (
+      editingGroup &&
+      String(athleteGroup.group_id) === String(editingGroup.id)
+    ) {
+      return true;
+    }
+
+    // Pertence a outra turma → esconder
+    return false;
+  });
+
+  const startNewGroup = () => {
+    setForm({
+      name: "",
+      sport: "",
+      focus_skill: "",
+      description: "",
+      athlete_ids: []
+    });
+
+    setEditingGroup(null);
+    setShowForm(true);
+  };
+
  
   return (
     <div className="space-y-6" data-testid="groups-page">
@@ -154,7 +207,7 @@ const loadGroups = async () => {
           <p className="text-slate-500 mt-1">Organiza turmas e equipas para facilitar o acompanhamento.</p>
         </div>
         {!showForm && (
-          <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 btn-hover-orange transition" data-testid="add-group-btn">
+          <button onClick={startNewGroup} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 btn-hover-orange transition" data-testid="add-group-btn">
             <Plus className="w-4 h-4" /> Nova turma
           </button>
         )}
@@ -208,11 +261,17 @@ const loadGroups = async () => {
               <div className="font-semibold text-slate-800 text-sm">Atletas na turma</div>
               <div className="text-xs text-slate-500">{form.athlete_ids.length} selecionado(s) · {athletes.length} disponíveis</div>
             </div>
-            {athletes.length === 0 ? (
-              <div className="text-sm text-slate-500 py-6 text-center">Ainda não tens atletas registados.</div>
-            ) : (
+            {!form.sport ? (
+                <div className="text-sm text-slate-500 py-6 text-center">
+                  Seleciona primeiro o desporto da turma para veres os atletas disponíveis.
+                </div>
+              ) : availableAthletes.length === 0 ? (
+                <div className="text-sm text-slate-500 py-6 text-center">
+                  Não existem atletas disponíveis para este desporto.
+                </div>
+              ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-auto pr-1">
-                {athletes.map(a => {
+                {availableAthletes.map(a => {
                   const checked = form.athlete_ids.includes(a.id);
                   return (
                     <label key={a.id}

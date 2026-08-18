@@ -61,7 +61,8 @@ export const Avaliacoes = {
       .from('avaliacoes')
       .select('*')
       .eq('user_id', user.id)
-
+      .eq('eliminated', false);
+      
     if (error) throw error
    
     return data
@@ -78,6 +79,7 @@ export const Avaliacoes = {
         .select('*')
         .eq('user_id', user.id)
         .eq('athlete_id', athlete_id)
+        .eq('eliminated', false)
         .order('created_at', { ascending: false })
         .limit(1)
 
@@ -97,6 +99,7 @@ export const Avaliacoes = {
         .select('*')
         .eq('user_id', user.id)
         .eq('athlete_id', athlete_id)
+        .eq('eliminated', false)
         .order('created_at', { ascending: true })
         if (error) throw error
 
@@ -116,6 +119,7 @@ export const Avaliacoes = {
       .from('avaliacoes')
       .select('*')
       .eq('user_id', user.id)
+      .eq('eliminated', false)
       .in('athlete_id', athleteIds)
       .order('created_at', { ascending: false });
 
@@ -128,6 +132,7 @@ export const Avaliacoes = {
     const { count, error } = await supabase
       .from('avaliacoes')
       .select('*', { count: 'exact', head: true })
+      .eq('eliminated', false)
 
     if (error) throw error
     

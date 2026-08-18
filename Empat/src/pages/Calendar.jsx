@@ -122,6 +122,20 @@ export default function CalendarPage() {
 
     }, {});
 
+  const startNewGroup = () => {
+    setForm({
+      title: "",
+        date: "",
+        sport: "futebol",
+        focus_skill: "comunicacao",
+        team: "",
+        notes: ""
+    });
+
+    setEditingClass(null);
+    setShow(true);
+  };
+
   return (
     <div className="space-y-6" data-testid="calendar-page">
       <div className="flex items-center justify-between">
@@ -129,7 +143,7 @@ export default function CalendarPage() {
           <h1 className="font-display text-3xl font-bold tracking-tighter">Calendário de treinos</h1>
           <p className="text-slate-500 mt-1">Planeia sessões de treino com foco em soft skills.</p>
         </div>
-        <button onClick={()=>setShow(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold btn-hover-orange" data-testid="add-session-btn">
+        <button onClick={startNewGroup} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold btn-hover-orange" data-testid="add-session-btn">
           <Plus className="w-4 h-4"/> Nova sessão
         </button>
       </div>

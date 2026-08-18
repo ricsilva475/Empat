@@ -118,6 +118,7 @@ export const Atletas = {
 
     if (!user) throw new Error("Utilizador não autenticado")
 
+    //eliminar atletas
     const { error } = await supabase
       .from('athletes')
       .update({ eliminated: true })
@@ -126,12 +127,22 @@ export const Atletas = {
 
     if (error) throw error
 
+    //desativar atletas nos grupo atletas
     const { error: groupError } = await supabase
       .from('group_athletes')
       .update({ ativo: false })
       .eq('athlete_id', id);
 
     if (groupError) throw groupError;
+
+    //Eliminar avaliações do atleta
+    const { error: avaliacaoError } = await supabase
+      .from('avaliacoes')
+      .update({ eliminated: true })
+      .eq('athlete_id', id)
+      .eq('user_id', user.id);
+
+    if (avaliacaoError) throw avaliacaoError;
   },
   async syncGroups(athleteId, groupIds) {
   
@@ -189,6 +200,25 @@ export const Atletas = {
     if (error) throw error;
 
     return data.map(g => g.group_id);
+  },
+
+  async getGroupsByAthlete(athleteId) {
+    const { data, error } = await supabase
+      .from("group_athletes")
+      .select(`
+        group_id,
+        groups (
+          id,
+          name,
+          sport
+        )
+      `)
+      .eq("athlete_id", athleteId)
+      .eq("ativo", true);
+
+    if (error) throw error;
+
+    return data.map(item => item.groups);
   },
 
   
