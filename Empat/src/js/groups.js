@@ -186,7 +186,18 @@ export const Grupos = {
 
     if (err3) throw err3;
   }
-}
+},
+
+async getAthletesWithGroups() {
+  const { data, error } = await supabase
+    .from("group_athletes")
+    .select("athlete_id, group_id")
+    .eq("ativo", true);
+
+  if (error) throw error;
+
+  return data;
+},
     
 
     

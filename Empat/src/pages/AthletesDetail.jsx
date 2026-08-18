@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
@@ -16,17 +16,21 @@ export default function AthleteDetail() {
   const [avaliacoes, setAvaliacoes] = useState([null]);
   const [feedback, setFeedback] = useState(null);
   const [loadingAi, setLoadingAi] = useState(false);
+  const [grupos, setGrupos] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       const athleteData = await Atletas.getAtletaDetails(id);
       const lastAvaliacao = await Avaliacoes.getLastAvaliacaoByAtleta(id);
       const avaliacoes = await Avaliacoes.getAvaliacoesByAtleta(id);
+      const grupoData = await Atletas.getGroupsByAthlete(id);
 
       console.warn("Dados do atleta carregados:", avaliacoes);
+      console.warn("Dados dos grupos carregados:", grupoData);
       setData(athleteData);
       setAvaliacao(lastAvaliacao);
       setAvaliacoes(avaliacoes);
+      setGrupos(grupoData);
     };
     load();
   }, [id]);
@@ -62,14 +66,19 @@ export default function AthleteDetail() {
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-3xl">{data.name[0]?.toUpperCase()}</div>
         <div className="flex-1">
           <h1 className="font-display text-3xl font-bold tracking-tighter">{data.name}</h1>
-          <div className="text-slate-500 capitalize mt-1">{data.sport} · {data.age} anos · {data.team || "Sem equipa"}{data.position ? ` · ${data.position}` : ""}</div>
+          <div className="text-slate-500 capitalize mt-1">
+            {data.sport} · {data.age} anos
+            {data.position ? ` · ${data.position}` : ""}
+            {grupos.length > 0 ? ` · ${grupos[0].name}` : " · Sem turma"}
+          </div>
+
+          
         </div>
         <button onClick={runFeedback} disabled={loadingAi} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-60 transition" data-testid="athlete-ai-feedback">
           {loadingAi ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
           Feedback IA
         </button>
       </div>
-
       <div className="grid md:grid-cols-4 gap-4">
         {SOFT_SKILLS.map(s => {
           const v = avaliacao?.[s.id] ?? 0;

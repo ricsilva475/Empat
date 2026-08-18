@@ -18,13 +18,29 @@ export default function Athletes() {
   const [atletasNum, setAtletasNum] = useState("");
   const [editingAthlete, setEditingAthlete] = useState(null);
   const [grupos, setGrupos] = useState([]);
+  const [gruposPorAtleta, setGruposPorAtleta] = useState({});
+  //const [numGrupos, setNumGrupos] = useState([0]);
   
   const loadAtletas = useCallback(async () => {
     try {
       const data = await Atletas.getAllData();
       const numAtletas = await Atletas.getAtletasCount();
+
+      const gruposPorAtleta = {};
+
+      await Promise.all(
+        data.map(async (atleta) => {
+          const grupoData = await Atletas.getGroupsByAthlete(atleta.id);
+
+          gruposPorAtleta[atleta.id] = grupoData || [];
+        })
+      );
+      console.log(gruposPorAtleta);
       setAtletasNum(numAtletas);
       setList(data);
+      setGruposPorAtleta(gruposPorAtleta);
+
+
     } catch (e) {
       console.error(e);
     }
@@ -58,6 +74,23 @@ export default function Athletes() {
     }
   }, []);
 
+  /*const loadGrupo = useCallback(async (atletas) => {
+    try {
+      const counts = {};
+
+      await Promise.all(
+        atletas.map(async (atleta) => {
+          const groupIds = await Atletas.getGroupsByAthlete(atleta.id);
+          counts[atleta.id] = groupIds.length;
+        })
+      );
+
+      setNumGrupos(counts);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);*/
+
   useEffect(() => {
 
     async function loadAll() {
@@ -82,7 +115,7 @@ export default function Athletes() {
       team: athlete.team,
       position: athlete.position,
       notes: athlete.notes,
-      group_ids: groupIds
+      group_ids: groupIds.map(grupo => grupo.id)
     });
 
     setShowForm(true);
@@ -91,15 +124,12 @@ export default function Athletes() {
   const toggleGroup = (id) => {
     setForm(prev => ({
       ...prev,
-      group_ids: prev.group_ids.includes(id)
-        ? prev.group_ids.filter(g => g !== id)
-        : [...prev.group_ids, id]
+      group_ids: prev.group_ids.includes(id) ? [] : [id]
     }));
   };
 
   const loadGrupos = useCallback(async () => {
       const data = await Grupos.getAllData();
-      console.log("teste ", data);
       setGrupos(data);
   }, []);
 
@@ -162,6 +192,21 @@ export default function Athletes() {
     toast.error("Erro ao guardar atleta");
   }
 };
+
+  const startNewGroup = () => {
+      setForm({
+        name: "",
+        age: 12,
+        sport: "futebol",
+        team: "",
+        position: "",
+        notes: "",
+        group_ids: []
+      });
+
+      setEditingAthlete(null);
+      setShowForm(true);
+    };
   return (
     <div className="space-y-6" data-testid="athletes-page">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -169,7 +214,7 @@ export default function Athletes() {
           <h1 className="font-display text-3xl font-bold tracking-tighter">Atletas</h1>
           <p className="text-slate-500 mt-1">{atletasNum} no total</p>
         </div>
-        <button onClick={() => setShowForm(v=>!v)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition btn-hover-orange" data-testid="add-athlete-btn">
+        <button onClick={startNewGroup} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition btn-hover-orange" data-testid="add-athlete-btn">
           <Plus className="w-4 h-4" /> Novo atleta
         </button>
       </div>
@@ -209,7 +254,8 @@ export default function Athletes() {
               </div>
 
               <div className="text-xs text-slate-500">
-                {form.group_ids.length} selecionada(s) · {grupos.length} disponíveis
+                {form.group_ids.length > 0 ? "1 selecionada" : "Nenhuma selecionada"} ·{" "}
+                {grupos.filter(grupo => grupo.sport === form.sport).length} disponíveis
               </div>
             </div>
 
@@ -219,7 +265,9 @@ export default function Athletes() {
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-auto pr-1">
-                {grupos.map(grupo => {
+                {grupos
+                .filter(grupo => grupo.sport === form.sport)
+                .map(grupo => {
                   const checked = form.group_ids.includes(grupo.id);
 
                   return (
@@ -280,7 +328,8 @@ export default function Athletes() {
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-lg">{a.name[0]?.toUpperCase()}</div>
                   <div className="min-w-0">
                     <div className="font-display font-bold truncate">{a.name}</div>
-                    <div className="text-xs text-slate-500 capitalize">{a.sport} · {a.age} anos · {a.team || "Sem equipa"}</div>
+                    <div className="text-xs text-slate-500 capitalize">{a.sport} · {a.age} anos · {gruposPorAtleta[a.id]?.[0]?.name || "Sem equipa"}
+                  </div>
                   </div>
                 </Link>
                 <button onClick={() => startEdit(a)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-athlete-${a.id}`}><Pencil className="w-4 h-4" /></button>
