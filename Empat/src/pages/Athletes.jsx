@@ -299,8 +299,6 @@ export default function Athletes() {
                           {grupo.sport}
                         </div>
                       </div>
-
-                      {checked && <Check className="w-4 h-4 text-cyan-600" />}
                     </label>
                   );
                 })}

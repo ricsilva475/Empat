@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../js/constants";
-import { Plus, Trash2, Users, Save, X, Pencil, Check } from "lucide-react";
-
+import { Plus, Trash2, Users, Save, X, Pencil, Check, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Grupos } from "../js/groups";
 
@@ -287,7 +287,17 @@ const loadGroups = async () => {
                         <div className="text-sm font-semibold truncate">{a.name}</div>
                         <div className="text-xs text-slate-500 capitalize truncate">{a.sport} · {a.age} anos</div>
                       </div>
-                      {checked && <Check className="w-4 h-4 text-cyan-600" />}
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/menu/atletas/${a.id}`}
+                          state={{
+                            from: "/menu/turmas",
+                            groupId: editingGroup?.id
+                          }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </label>
                   );
                 })}

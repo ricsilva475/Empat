@@ -1,6 +1,6 @@
 
 import React, { use, useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -17,6 +17,7 @@ export default function AthleteDetail() {
   const [feedback, setFeedback] = useState(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [grupos, setGrupos] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     const load = async () => {
@@ -58,7 +59,10 @@ export default function AthleteDetail() {
 
   return (
     <div className="space-y-6" data-testid="athlete-detail">
-      <Link to="/menu/atletas" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
+      <Link
+        to={location.state?.from || "/menu/atletas"}
+        className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
+      >
         <ArrowLeft className="w-4 h-4"/> Voltar
       </Link>
 
