@@ -258,7 +258,7 @@ const loadGroups = async () => {
           {/* Lista de atletas com checkboxes — estilo Avaliações */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center justify-between mb-3">
-              <div className="font-semibold text-slate-800 text-sm">Atletas na turma</div>
+              <div className="font-semibold text-slate-800 text-sm">Adicionar atletas à turma:</div>
               <div className="text-xs text-slate-500">{form.athlete_ids.length} selecionado(s) · {athletes.length} disponíveis</div>
             </div>
             {!form.sport ? (
