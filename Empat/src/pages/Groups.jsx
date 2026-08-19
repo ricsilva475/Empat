@@ -89,6 +89,16 @@ export default function Groups() {
 
   const deleteGrupo = async (id) => {
   try {
+
+    const atletasNoGrupo = athleteGroups.filter(
+      ag => String(ag.group_id) === String(id)
+    );
+
+    if(atletasNoGrupo.length > 0){
+      toast.error("Não é possível eliminar a turma porque existem atletas associados.");
+      return;
+    }
+    
     await Grupos.delete(id);
 
     //const data = await Grupos.getAllData();
@@ -96,7 +106,6 @@ export default function Groups() {
     setAthleteGroups(updatedAthleteGroups);
     loadGroups();
     toast.success("Grupo eliminado com sucesso!");
-
   } catch (e) {
     console.error(e);
     toast.error("Erro ao eliminar grupo!");
