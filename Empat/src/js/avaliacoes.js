@@ -67,6 +67,22 @@ export const Avaliacoes = {
    
     return data
   },
+  async getAllDataGrupo() {
+
+    const user = await getUser();
+
+    if (!user) throw new Error("Utilizador não autenticado")
+    
+    const { data, error } = await supabase
+      .from('avaliacoes_group')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('eliminated', false);
+      
+    if (error) throw error
+   
+    return data
+  },
 
   async getLastAvaliacaoByAtleta(athlete_id) {
 
@@ -129,15 +145,35 @@ export const Avaliacoes = {
   },
 
   async getAvaliacoesCount() {
+    const user = await getUser();
+
+    if (!user) throw new Error("Utilizador não autenticado");
     const { count, error } = await supabase
       .from('avaliacoes')
       .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
       .eq('eliminated', false)
 
     if (error) throw error
     
     return count ?? 0
   },
+  async getAvaliacoesGrupoCount() {
+    const user = await getUser();
+
+    if (!user) throw new Error("Utilizador não autenticado");
+    const { count, error } = await supabase
+      .from('avaliacoes_group')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('eliminated', false);
+
+    if (error) throw error;
+
+    return count ?? 0;
+  },
+
+
 
 }
 

@@ -66,6 +66,14 @@ export const Grupos = {
         .eq('user_id', user.id);
 
         if (error) throw error
+
+         const { error: avaliacoesError } = await supabase
+          .from('avaliacoes_group')
+          .update({ eliminated: true })
+          .eq('group_id', id)
+          .eq('user_id', user.id);
+
+        if (avaliacoesError) throw avaliacoesError;
     },
 
 
