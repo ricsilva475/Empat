@@ -4,6 +4,7 @@ import { Plus, Trash2, Users, Save, X, Pencil, Check, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Grupos } from "../js/groups";
+import { confirmToast } from "../components/DeleteToast";
 
 import { toast } from "react-toastify";
 
@@ -85,32 +86,38 @@ export default function Groups() {
 
     setShowForm(true);
   };
+
   
-
   const deleteGrupo = async (id) => {
-  try {
+    confirmToast("Eliminar turma?", async () => {
+      try {
+        const atletasNoGrupo = athleteGroups.filter(
+          ag => String(ag.group_id) === String(id)
+        );
 
-    const atletasNoGrupo = athleteGroups.filter(
-      ag => String(ag.group_id) === String(id)
-    );
+        if (atletasNoGrupo.length > 0) {
+          toast.error(
+            "Não é possível eliminar a turma porque existem atletas associados."
+          );
+          return;
+        }
 
-    if(atletasNoGrupo.length > 0){
-      toast.error("Não é possível eliminar a turma porque existem atletas associados.");
-      return;
-    }
-    
-    await Grupos.delete(id);
+        await Grupos.delete(id);
 
-    //const data = await Grupos.getAllData();
-    const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
-    setAthleteGroups(updatedAthleteGroups);
-    loadGroups();
-    toast.success("Grupo eliminado com sucesso!");
-  } catch (e) {
-    console.error(e);
-    toast.error("Erro ao eliminar grupo!");
-  }
-};
+        const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
+        setAthleteGroups(updatedAthleteGroups);
+
+        await loadGroups();
+
+        toast.success("Grupo eliminado com sucesso!");
+
+      } catch (e) {
+        console.error(e);
+        toast.error("Erro ao eliminar grupo!");
+      }
+    });
+  };
+
 const loadGroups = async () => {
   const data = await Grupos.getAllData();
 
