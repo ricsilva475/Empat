@@ -14,6 +14,8 @@ export default function Dashboard() {
   const [athletes, setAthletes] = useState([]);
   const [atletasNum, setAtletasNum] = useState("");
   const [avaliacoesNum, setAvaliacoesNum] = useState("");
+  const [statsGrupo, setStatsGrupo] = useState(null);
+  const [graficoAtivo, setGraficoAtivo] = useState(0);
 
   useEffect(() => {
     async function AtletasData() {
@@ -26,15 +28,35 @@ export default function Dashboard() {
 
     async function AvaliacoesData() {
       const numAvaliacoes = await Avaliacoes.getAvaliacoesCount();
+      const numAvaliacoesGrupo = await Avaliacoes.getAvaliacoesGrupoCount();
+
+      const totalAvaliacoes = numAvaliacoes + numAvaliacoesGrupo;
+
       const athletesIds = await Atletas.getAllData();
       const avaliacoes = await Avaliacoes.getLastAvaliacoes(athletesIds);
+      console.log("av: ", avaliacoes);
       const averageTeamValue = { team_averages: calcTeamAverages(avaliacoes) };
       const averageAthleteValue = calcTeamAverages(avaliacoes);
       setStats(averageTeamValue);
-      setAvaliacoesNum(numAvaliacoes);
+      setAvaliacoesNum(totalAvaliacoes);
     }
     AvaliacoesData();
+
+    async function AvaliacoesDataGrupo() {
+      const avaliacoesGrupo = await Avaliacoes.getAllDataGrupo();
+      const averageGroupValue = {group_averages: calcTeamAverages(avaliacoesGrupo)};
+      setStatsGrupo(averageGroupValue);
+      console.log("av grupo: ", avaliacoesGrupo);
+    }
+    AvaliacoesDataGrupo();
   }, []);
+
+  const radarDataGrupo = statsGrupo
+  ? SOFT_SKILLS.map(s => ({
+      skill: s.name,
+      value: statsGrupo.group_averages[s.id] || 0
+    }))
+  : [];
 
   // Função para calcular a média da equipa
   function calcTeamAverages(data) {
@@ -87,32 +109,98 @@ export default function Dashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-display text-xl font-bold">Média dos atletas por soft skill</h2>
-              <p className="text-sm text-slate-500">Valores atuais (0–5) baseados nas últimas avaliações.</p>
-            </div>
-          </div>
-          <div className="mt-4 h-80">
-            <ResponsiveContainer>
-              <RadarChart data={radarData} outerRadius="70%">
-                <PolarGrid stroke="#E2E8F0" />
-                <PolarAngleAxis dataKey="skill" tick={{ fill: "#475569", fontSize: 13, fontFamily: "Figtree" }} />
-                <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fill: "#94A3B8", fontSize: 11 }} />
-                <Radar name="Equipa" dataKey="value" stroke="#06B6D4" fill="#06B6D4" fillOpacity={0.35} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-2 grid grid-cols-4 gap-2">
-            {SOFT_SKILLS.map(s => (
-              <div key={s.id} className="text-center">
-                <div className="text-xs text-slate-500">{s.name}</div>
-                <div className="text-lg font-display font-bold" style={{color: s.color}}>{stats?.team_averages?.[s.id] ?? 0}</div>
+        <div className="lg:col-span-2">
+
+          <div className="rounded-2xl bg-white border border-slate-200 p-6">
+            {graficoAtivo === 0 ? (
+              /* GRÁFICO DOS ATLETAS */
+              <>
+
+              <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display text-xl font-bold">Média dos atletas por soft skill</h2>
+                    <p className="text-sm text-slate-500">Valores atuais (0–5) baseados nas últimas avaliações.</p>
+                  </div>
+                </div>
+                <div className="mt-4 h-80">
+                  <ResponsiveContainer width="100%" height={320}>
+                    <RadarChart data={radarData} outerRadius="70%">
+                    <PolarGrid stroke="#E2E8F0" />
+                    <PolarAngleAxis dataKey="skill" tick={{ fill: "#475569", fontSize: 13, fontFamily: "Figtree" }} />
+                    <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fill: "#94A3B8", fontSize: 11 }} />
+                    <Radar name="Equipa" dataKey="value" stroke="#06B6D4" fill="#06B6D4" fillOpacity={0.35} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  {SOFT_SKILLS.map(s => (
+                  <div key={s.id} className="text-center">
+                    <div className="text-xs text-slate-500">{s.name}</div>
+                    <div className="text-lg font-display font-bold" style={{color: s.color}}>{stats?.team_averages?.[s.id] ?? 0}</div>
+                  </div>
+                  ))}
+                  </div>
+                </div>
+              </>
+          ) : (
+
+          /* GRÁFICO DAS TURMAS */
+            <>
+              <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
+                <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-display text-xl font-bold">Média das turmas por soft skill</h2>
+                  <p className="text-sm text-slate-500">Valores médios (0–5) baseados nas avaliações.</p>
+                </div>
+                </div>
+                <div className="mt-4 h-80">
+                <ResponsiveContainer width="100%" height={320}>
+                  <RadarChart data={radarDataGrupo} outerRadius="70%">
+                  <PolarGrid stroke="#E2E8F0" />
+                  <PolarAngleAxis dataKey="skill" tick={{ fill: "#475569", fontSize: 13, fontFamily: "Figtree" }} />
+                  <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fill: "#94A3B8", fontSize: 11 }} />
+                  <Radar name="Turmas" dataKey="value" stroke="#06B6D4" fill="#06B6D4" fillOpacity={0.35}/>
+                  </RadarChart>
+                </ResponsiveContainer>
+                </div>
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                {SOFT_SKILLS.map(s => (
+                  <div key={s.id} className="text-center">
+                  <div className="text-xs text-slate-500">{s.name}</div>
+                  <div className="text-lg font-display font-bold" style={{color: s.color}}>{statsGrupo?.group_averages?.[s.id] ?? 0}</div>
+                  </div>
+                ))}
+                </div>
               </div>
-            ))}
+            </>
+          )}
+          {/* BOLAS DO SLIDESHOW */}
+          <div className="flex justify-center items-center gap-2 mt-5">
+
+            <button
+              onClick={() => setGraficoAtivo(0)}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+              graficoAtivo === 0
+                ? "bg-cyan-500 w-7"
+                : "bg-slate-300 hover:bg-slate-400"
+              }`}
+              aria-label="Mostrar gráfico dos atletas"
+            />
+
+            <button
+              onClick={() => setGraficoAtivo(1)}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+              graficoAtivo === 1
+                ? "bg-cyan-500 w-7"
+                : "bg-slate-300 hover:bg-slate-400"
+              }`}
+              aria-label="Mostrar gráfico das turmas"
+            />
+
           </div>
         </div>
+      </div>
 
         <div className="rounded-2xl bg-white border border-slate-200 p-6">
           <h2 className="font-display text-xl font-bold">Atletas recentes</h2>
@@ -135,32 +223,6 @@ export default function Dashboard() {
             ))}
           </ul>
         </div>
-        {/*<div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-display text-xl font-bold">Média das turmas por soft skill</h2>
-              <p className="text-sm text-slate-500">Valores atuais (0–5) baseados nas últimas avaliações.</p>
-            </div>
-          </div>
-          <div className="mt-4 h-80">
-            <ResponsiveContainer>
-              <RadarChart data={radarData} outerRadius="70%">
-                <PolarGrid stroke="#E2E8F0" />
-                <PolarAngleAxis dataKey="skill" tick={{ fill: "#475569", fontSize: 13, fontFamily: "Figtree" }} />
-                <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fill: "#94A3B8", fontSize: 11 }} />
-                <Radar name="Equipa" dataKey="value" stroke="#06B6D4" fill="#06B6D4" fillOpacity={0.35} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-2 grid grid-cols-4 gap-2">
-            {SOFT_SKILLS.map(s => (
-              <div key={s.id} className="text-center">
-                <div className="text-xs text-slate-500">{s.name}</div>
-                <div className="text-lg font-display font-bold" style={{color: s.color}}>{stats?.team_averages?.[s.id] ?? 0}</div>
-              </div>
-            ))}
-          </div>
-        </div> */}
       </div>
 
       <div className="rounded-3xl p-5 bg-gradient-to-br from-cyan-500 via-pink-500 to-orange-500 text-white">
