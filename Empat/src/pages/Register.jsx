@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LOGO_URL } from "../js/constants";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "sooner";
-import { Users } from "../js/users";
+import { toast } from "sonner";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -11,12 +10,14 @@ export default function Register() {
     email: "",
     password: "",
   });
+
   const [error, setError] = useState("");
   const { signup, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -27,68 +28,153 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    // Validar nome
     if (!formData.name.trim()) {
       setError("O nome é obrigatório.");
       return;
     }
 
+    // Validar email
     if (!formData.email.trim()) {
       setError("O email é obrigatório.");
       return;
     }
 
+    // Validar password
     if (formData.password.length < 6) {
-      setError("A palavra-passe deve ter pelo menos 6 caracteres.");
+      setError(
+        "A palavra-passe deve ter pelo menos 6 caracteres."
+      );
       return;
     }
 
-    const { error: signupError } = await signup(
-      formData.email,
+    // Criar conta no Supabase Auth
+    const { data, error: signupError } = await signup(
+      formData.email.trim(),
       formData.password,
-      formData.name
+      formData.name.trim()
     );
 
+    // Erro ao criar conta
     if (signupError) {
-      const message = signupError.message || "Erro ao criar conta. Tenta novamente.";
+      const message =
+        signupError.message ||
+        "Erro ao criar conta. Tenta novamente.";
+
+      console.error("Erro ao criar conta:", signupError);
+
       setError(message);
       toast.error(message);
+
       return;
     }
 
-    await Users.insertUser({ email: formData.email, name: formData.name });
+    // Garantir que o utilizador foi criado
+    if (!data?.user) {
+      const message =
+        "A conta foi criada, mas não foi possível obter os dados do utilizador.";
 
-    console.warn("Conta criada com sucesso!");
+      console.error(message);
+
+      setError(message);
+      toast.error(message);
+
+      return;
+    }
+
+    console.log(
+      "Conta criada com sucesso:",
+      data.user.id
+    );
+
+    /*
+     * NÃO criamos manualmente o public.users aqui.
+     *
+     * O trigger:
+     *
+     * on_auth_user_created
+     *        ↓
+     * handle_new_user()
+     *
+     * cria automaticamente o registo em public.users.
+     */
+
+    toast.success("Conta criada com sucesso!");
+
     navigate("/menu");
   };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-slate-50">
+      {/* Painel esquerdo */}
       <div className="hidden lg:block relative overflow-hidden bg-gradient-to-br from-lime-400 via-cyan-500 to-pink-500 p-12">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.3),transparent_50%)]" />
-        <Link to="/" className="relative flex items-center gap-3 text-white">
-          <img src={LOGO_URL} alt="Empat" className="w-11 h-11 rounded-xl bg-white p-1" />
-          <span className="font-display font-bold text-2xl">Empat.</span>
+
+        <Link
+          to="/"
+          className="relative flex items-center gap-3 text-white"
+        >
+          <img
+            src={LOGO_URL}
+            alt="Empat"
+            className="w-11 h-11 rounded-xl bg-white p-1"
+          />
+
+          <span className="font-display font-bold text-2xl">
+            Empat.
+          </span>
         </Link>
+
         <div className="relative mt-auto pt-40 text-white max-w-md">
           <h1 className="font-display text-4xl font-bold tracking-tighter leading-tight">
             Treina pessoas, não só atletas.
           </h1>
-          <p className="mt-4 text-white/80">Soft skills desenvolvidas em cada treino, com o apoio da IA.</p>
+
+          <p className="mt-4 text-white/80">
+            Soft skills desenvolvidas em cada treino, com o apoio da IA.
+          </p>
         </div>
       </div>
 
+      {/* Formulário */}
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <Link to="/" className="lg:hidden flex items-center gap-2 mb-6">
-            <img src={LOGO_URL} alt="Empat" className="w-9 h-9" />
-            <span className="font-display font-bold text-xl">Empat.</span>
-          </Link>
-          <h2 className="font-display text-3xl font-bold tracking-tighter">Criar conta</h2>
-          <p className="text-slate-500 mt-2">Começa grátis em menos de 1 minuto</p>
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-4">
+          {/* Logo mobile */}
+          <Link
+            to="/"
+            className="lg:hidden flex items-center gap-2 mb-6"
+          >
+            <img
+              src={LOGO_URL}
+              alt="Empat"
+              className="w-9 h-9"
+            />
+
+            <span className="font-display font-bold text-xl">
+              Empat.
+            </span>
+          </Link>
+
+          <h2 className="font-display text-3xl font-bold tracking-tighter">
+            Criar conta
+          </h2>
+
+          <p className="text-slate-500 mt-2">
+            Começa grátis em menos de 1 minuto
+          </p>
+
+          <form
+            onSubmit={onSubmit}
+            className="mt-8 space-y-4"
+          >
+
+            {/* Nome */}
             <div>
-              <label className="text-sm font-medium text-slate-700">Nome</label>
+              <label className="text-sm font-medium text-slate-700">
+                Nome
+              </label>
+
               <input
                 name="name"
                 value={formData.name}
@@ -99,8 +185,12 @@ export default function Register() {
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="text-sm font-medium text-slate-700">Email</label>
+              <label className="text-sm font-medium text-slate-700">
+                Email
+              </label>
+
               <input
                 name="email"
                 type="email"
@@ -112,8 +202,12 @@ export default function Register() {
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label className="text-sm font-medium text-slate-700">Password</label>
+              <label className="text-sm font-medium text-slate-700">
+                Password
+              </label>
+
               <input
                 name="password"
                 type="password"
@@ -125,13 +219,18 @@ export default function Register() {
                 data-testid="register-password"
               />
             </div>
-            
+
+            {/* Erro */}
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 rounded-xl p-3" data-testid="register-error">
+              <div
+                className="text-sm text-red-600 bg-red-50 rounded-xl p-3"
+                data-testid="register-error"
+              >
                 {error}
               </div>
             )}
 
+            {/* Botão */}
             <button
               type="submit"
               disabled={loading}
@@ -142,8 +241,15 @@ export default function Register() {
             </button>
           </form>
 
+          {/* Login */}
           <div className="mt-6 text-sm text-slate-500 text-center">
-            Já tens conta? <Link to="/login" className="font-semibold text-cyan-600 hover:text-cyan-700">Entra</Link>
+            Já tens conta?{" "}
+            <Link
+              to="/login"
+              className="font-semibold text-cyan-600 hover:text-cyan-700"
+            >
+              Entra
+            </Link>
           </div>
         </div>
       </div>
