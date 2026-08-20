@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Goals } from "../js/goals";
-import { Plus, Trash2, Target, Hourglass } from "lucide-react";
+import { Plus, Trash2, Target, Hourglass, Sparkles } from "lucide-react";
 
 export default function GoalsComponent() {
   const [athletes, setAthletes] = useState([]);
@@ -308,177 +308,224 @@ export default function GoalsComponent() {
         </button>
       </div>
 
+      {/* Área combinada: Select de atleta + Formulário */}
       <div className="rounded-2xl bg-white border border-slate-200 p-5">
-        <label className="text-sm font-medium text-slate-700 block mb-1.5">
-          Lista de atletas
-        </label>
-
-        <select
-          value={selectedAthlete}
-          onChange={(e) => setSelectedAthlete(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
-          data-testid="goal-athlete-select"
-        >
-          <option value="">
-            — Escolhe um atleta —
-          </option>
-
-          {athletes.map((athlete) => (
-            <option key={athlete.id} value={athlete.id}>
-              {athlete.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {show && (
-        <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4">
-          {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+        <div className="space-y-4">
+          {/* Select de atleta */}
           <div>
-            <label className="text-sm font-medium">
-              Exemplos de metas
+            <label className="text-sm font-medium text-slate-700 block mb-1.5">
+              Lista de atletas
             </label>
 
             <select
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  description: e.target.value,
-                })
-              }
-              className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
-              data-testid="goal-template-select"
+              value={selectedAthlete}
+              onChange={(e) => setSelectedAthlete(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+              data-testid="goal-athlete-select"
             >
               <option value="">
-                — Escolher um exemplo —
+                — Escolhe um atleta —
               </option>
 
-              {goalTemplates.map((goal) => (
-                <option key={goal} value={goal}>
-                  {goal}
+              {athletes.map((athlete) => (
+                <option key={athlete.id} value={athlete.id}>
+                  {athlete.name}
                 </option>
               ))}
             </select>
           </div>
 
-          <div>
-            <label className="text-sm font-medium">
-              Descrição da meta
-            </label>
+          {/* Formulário - visível apenas quando show é true */}
+          {show && (
+            <div className="border-t border-slate-200 pt-4 mt-2">
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 mb-4">
+                  {error}
+                </div>
+              )}
 
-            <input
-              type="text"
-              value={form.description}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  description: e.target.value,
-                })
-              }
-              className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
-              placeholder="Ex.: melhorar a comunicação com a equipa"
-              data-testid="goal-description"
-            />
-          </div>
+              {/* Grid de 2 colunas para desktop, 1 coluna para mobile */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Coluna 1 */}
+                <div className="space-y-4">
+                  {/* Sugestões de metas - agora como botões */}
+                  <div>
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-slate-400" />
+                      Sugestões de metas
+                    </label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {goalTemplates.slice(0, 4).map((goal) => (
+                        <button
+                          key={goal}
+                          onClick={() =>
+                            setForm({
+                              ...form,
+                              description: goal,
+                            })
+                          }
+                          className="text-xs px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-all whitespace-nowrap"
+                        >
+                          {goal.length > 30 ? goal.substring(0, 30) + "..." : goal}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {goalTemplates.slice(4).map((goal) => (
+                        <button
+                          key={goal}
+                          onClick={() =>
+                            setForm({
+                              ...form,
+                              description: goal,
+                            })
+                          }
+                          className="text-xs px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-all whitespace-nowrap"
+                        >
+                          {goal.length > 30 ? goal.substring(0, 30) + "..." : goal}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1.5">
+                      Clica numa sugestão para preencher automaticamente
+                    </p>
+                  </div>
 
-          <div>
-            <label className="text-sm font-medium">
-              Prazo
-            </label>
+                  {/* Descrição da meta */}
+                  <div>
+                    <label className="text-sm font-medium">
+                      Descrição da meta <span className="text-red-500">*</span>
+                    </label>
 
-            <select
-              value={form.deadlineType}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  deadlineType: e.target.value,
-                })
-              }
-              className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
-              data-testid="goal-deadline-type"
-            >
-              <option value="year">
-                Até ao final do ano
-              </option>
+                    <input
+                      type="text"
+                      value={form.description}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          description: e.target.value,
+                        })
+                      }
+                      className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 transition-all"
+                      placeholder="Ex.: melhorar a comunicação com a equipa"
+                      data-testid="goal-description"
+                    />
+                  </div>
+                </div>
 
-              <option value="custom">
-                Escolher uma data
-              </option>
+                {/* Coluna 2 */}
+                <div className="space-y-4">
+                  {/* Prazo e data personalizada juntos */}
+                  <div>
+                    <label className="text-sm font-medium">
+                      Prazo
+                    </label>
 
-              <option value="none">
-                Sem prazo
-              </option>
-            </select>
-          </div>
+                    <select
+                      value={form.deadlineType}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          deadlineType: e.target.value,
+                          deadline: e.target.value !== "custom" ? "" : form.deadline,
+                        })
+                      }
+                      className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 transition-all"
+                      data-testid="goal-deadline-type"
+                    >
+                      <option value="year">
+                        Até ao final do ano ({currentYear})
+                      </option>
 
-          <div>
-            <label className="text-sm font-medium">
-              Prioridade
-            </label>
+                      <option value="custom">
+                        Escolher uma data
+                      </option>
 
-            <select
-              value={form.priority}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  priority: e.target.value,
-                })
-              }
-              className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
-              data-testid="goal-priority"
-            >
-              <option value="alta">
-                Alta
-              </option>
+                      <option value="none">
+                        Sem prazo
+                      </option>
+                    </select>
 
-              <option value="media">
-                Média
-              </option>
+                    {form.deadlineType === "custom" && (
+                      <input
+                        type="date"
+                        value={form.deadline}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            deadline: e.target.value,
+                          })
+                        }
+                        className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 transition-all"
+                        data-testid="goal-custom-date"
+                      />
+                    )}
+                  </div>
 
-              <option value="baixa">
-                Baixa
-              </option>
-            </select>
-          </div>
+                  {/* Prioridade */}
+                  <div>
+                    <label className="text-sm font-medium">
+                      Prioridade
+                    </label>
 
-          {form.deadlineType === "custom" && (
-            <input
-              type="date"
-              value={form.deadline}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  deadline: e.target.value,
-                })
-              }
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200"
-              data-testid="goal-custom-date"
-            />
+                    <select
+                      value={form.priority}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          priority: e.target.value,
+                        })
+                      }
+                      className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 transition-all"
+                      data-testid="goal-priority"
+                    >
+                      <option value="alta">
+                        Alta
+                      </option>
+
+                      <option value="media">
+                        Média
+                      </option>
+
+                      <option value="baixa">
+                        Baixa
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botões de ação - ocupam toda a largura */}
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
+                <button
+                  onClick={() => {
+                    setShow(false);
+                    setError("");
+                    setForm({
+                      description: "",
+                      priority: "media",
+                      deadlineType: "year",
+                      deadline: "",
+                    });
+                  }}
+                  className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold hover:bg-slate-200 transition-all order-2 sm:order-1"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  onClick={addGoal}
+                  disabled={saving}
+                  className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:bg-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+                  data-testid="goal-save"
+                >
+                  {saving ? "A guardar..." : "Guardar meta"}
+                </button>
+              </div>
+            </div>
           )}
-
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setShow(false)}
-              className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold"
-            >
-              Cancelar
-            </button>
-
-            <button
-              onClick={addGoal}
-              disabled={saving}
-              className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:opacity-90 disabled:opacity-50"
-              data-testid="goal-save"
-            >
-              {saving ? "A guardar..." : "Guardar"}
-            </button>
-          </div>
         </div>
-      )}
+      </div>
 
       {selectedAthlete && (
         <>
@@ -528,43 +575,40 @@ export default function GoalsComponent() {
 
           {athleteGoals.length > 0 && (
             <>
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">
-                  <div className="text-2xl font-bold">
+              {/* Cards de estatísticas - responsivos */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+                <div className="bg-white border border-slate-200 rounded-2xl p-3 md:p-4 text-center">
+                  <div className="text-xl md:text-2xl font-bold">
                     {athleteGoals.length}
                   </div>
-
-                  <div className="text-sm text-slate-500">
+                  <div className="text-xs md:text-sm text-slate-500">
                     Total
                   </div>
                 </div>
 
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">
-                  <div className="text-2xl font-bold">
+                <div className="bg-white border border-slate-200 rounded-2xl p-3 md:p-4 text-center">
+                  <div className="text-xl md:text-2xl font-bold text-green-600">
                     {completedGoals}
                   </div>
-
-                  <div className="text-sm text-slate-500">
+                  <div className="text-xs md:text-sm text-slate-500">
                     Concluídas
                   </div>
                 </div>
 
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">
-                  <div className="text-2xl font-bold">
+                <div className="bg-white border border-slate-200 rounded-2xl p-3 md:p-4 text-center">
+                  <div className="text-xl md:text-2xl font-bold text-yellow-600">
                     {pendingGoals}
                   </div>
-
-                  <div className="text-sm text-slate-500">
+                  <div className="text-xs md:text-sm text-slate-500">
                     Pendentes
                   </div>
                 </div>
 
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">
-                  <div className="text-2xl font-bold">
+                <div className="bg-white border border-slate-200 rounded-2xl p-3 md:p-4 text-center">
+                  <div className="text-xl md:text-2xl font-bold text-red-600">
                     {expiredGoals}
                   </div>
-
-                  <div className="text-sm text-slate-500">
+                  <div className="text-xs md:text-sm text-slate-500">
                     Atrasadas
                   </div>
                 </div>
@@ -586,25 +630,25 @@ export default function GoalsComponent() {
                   .map((goal) => (
                     <div
                       key={goal.id}
-                      className={`rounded-2xl border p-5 flex items-center justify-between transition-all ${
+                      className={`rounded-2xl border p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between transition-all ${
                         goal.completed
                           ? "bg-cyan-50 border-cyan-200"
                           : "bg-white border-slate-200 hover:border-cyan-200 hover:shadow-md"
                       }`}
                       data-testid={`goal-item-${goal.id}`}
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-start sm:items-center gap-3 md:gap-4">
                         <input
                           type="checkbox"
                           checked={goal.completed}
                           onChange={() => toggleGoal(goal.id)}
-                          className="w-6 h-6 accent-cyan-600 cursor-pointer"
+                          className="w-5 h-5 md:w-6 md:h-6 accent-cyan-600 cursor-pointer mt-1 sm:mt-0"
                           data-testid={`goal-checkbox-${goal.id}`}
                         />
 
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p
-                            className={`font-medium ${
+                            className={`font-medium text-sm md:text-base ${
                               goal.completed
                                 ? "line-through text-slate-400"
                                 : "text-slate-800"
@@ -613,9 +657,9 @@ export default function GoalsComponent() {
                             {goal.description}
                           </p>
 
-                          <div className="flex flex-wrap gap-2 mt-3">
+                          <div className="flex flex-wrap gap-1.5 md:gap-2 mt-2">
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold ${priorityClass(
+                              className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-semibold ${priorityClass(
                                 goal.priority
                               )}`}
                             >
@@ -623,11 +667,11 @@ export default function GoalsComponent() {
                             </span>
 
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold ${deadlineClass(
+                              className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-semibold ${deadlineClass(
                                 goal.deadline
                               )}`}
                             >
-                              <Hourglass className="w-3 h-3 inline mr-1 text-slate-400" />
+                              <Hourglass className="w-2.5 h-2.5 md:w-3 md:h-3 inline mr-1 text-slate-400" />
                               {deadlineText(goal.deadline)}
                             </span>
                           </div>
@@ -636,10 +680,10 @@ export default function GoalsComponent() {
 
                       <button
                         onClick={() => removeGoal(goal.id)}
-                        className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                        className="p-1.5 md:p-2 text-slate-400 hover:text-red-500 transition-colors mt-2 sm:mt-0 self-end sm:self-center"
                         data-testid={`goal-delete-${goal.id}`}
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                       </button>
                     </div>
                   ))}
@@ -648,10 +692,10 @@ export default function GoalsComponent() {
           )}
 
           {athleteGoals.length === 0 && !loading && (
-            <div className="rounded-2xl bg-white border border-dashed border-slate-300 p-12 text-center">
-              <Target className="w-10 h-10 text-slate-400 mx-auto" />
+            <div className="rounded-2xl bg-white border border-dashed border-slate-300 p-8 md:p-12 text-center">
+              <Target className="w-8 h-8 md:w-10 md:h-10 text-slate-400 mx-auto" />
 
-              <p className="mt-3 text-slate-500">
+              <p className="mt-3 text-sm md:text-base text-slate-500">
                 {priorityFilter === "todas" 
                   ? "Este atleta ainda não tem metas definidas."
                   : `Não há metas com prioridade "${priorityFilter}".`}

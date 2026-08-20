@@ -12,7 +12,7 @@ import Exercises from "./pages/Exercises";
 import Observations from "./pages/Observations";
 import Planner from "./pages/Planner";
 import Goals from "./pages/Goals";
-import Profile from "./pages/Perfil";
+import Profile from "./pages/Profile";
 import Calendar from "./pages/Calendar";
 import Groups from "./pages/Groups";
 import RecursosP from "./pages/RecursosP";
