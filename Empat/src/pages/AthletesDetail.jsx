@@ -16,6 +16,7 @@ export default function AthleteDetail() {
   const [loadingAi, setLoadingAi] = useState(false);
   const [grupos, setGrupos] = useState(null);
   const location = useLocation();
+  const [numeroRegistos, setNumeroRegistos] = useState(10);
 
   useEffect(() => {
     const load = async () => {
@@ -83,7 +84,9 @@ export default function AthleteDetail() {
 
   if (!data) return <div className="text-slate-500\">A carregar...</div>;
 
-  const chartData = (avaliacoes || []).map(a => ({
+  const avaliacoesFiltradas = (avaliacoes || []).slice(-numeroRegistos);
+
+  const chartData = avaliacoesFiltradas.map(a => ({
     date: new Date(a.created_at).toLocaleDateString("pt-PT", {
       day: "2-digit",
       month: "short",
@@ -95,7 +98,7 @@ export default function AthleteDetail() {
     motivacao: a.motivacao > 0 ? a.motivacao : null,
     tomadecisao: a.tomadecisao > 0 ? a.tomadecisao : null,
     gestaostress: a.gestaostress > 0 ? a.gestaostress : null,
-}));
+  }));
 
   return (
     <div className="space-y-6" data-testid="athlete-detail">
@@ -130,6 +133,7 @@ export default function AthleteDetail() {
           Feedback IA
         </button>
       </div>
+      <h2 className="font-display text-xl font-bold">Média dos últimos 30 dias</h2>
       <div className="grid md:grid-cols-4 gap-4">
         {SOFT_SKILLS.map(s => {
           const media = medias30Dias[s.id] ?? 0;
@@ -166,7 +170,25 @@ export default function AthleteDetail() {
       )}
 
       <div className="rounded-2xl bg-white border border-slate-200 p-6">
-        <h2 className="font-display text-xl font-bold">Evolução ao longo do tempo</h2>
+        <div className="flex gap-2">
+          <h2 className="font-display text-xl font-bold">Evolução ao longo do tempo</h2>
+          {avaliacoes.length > 10 && (
+            <select
+              value={numeroRegistos}
+              onChange={(e) => setNumeroRegistos(Number(e.target.value))}
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm"
+            >
+              <option value={10}>Últimos 10</option>
+
+              {avaliacoes.length > 30 && (
+                <option value={30}>Últimos 30</option>
+              )}
+
+              <option value={avaliacoes.length}>Todos</option>
+            </select>
+          )}
+        </div>
+        
         {chartData.length === 0 ? (
           <p className="text-slate-500 mt-4 text-sm">Sem avaliações ainda. Vai a <Link to="/app/avaliacoes" className="text-cyan-600 font-semibold">Avaliações</Link>.</p>
         ) : (
