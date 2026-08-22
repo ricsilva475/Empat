@@ -594,7 +594,7 @@ export default function Profile() {
 
           {/* Botão */}
 
-          <div className="flex justify-end">
+          <div className="flex xl:justify-end justify-center">
             <button
               type="submit"
               disabled={saving}
@@ -720,7 +720,7 @@ export default function Profile() {
 
           {/* Botão password */}
 
-          <div className="flex justify-end">
+          <div className="flex xl:justify-end justify-center">
             <button
               type="submit"
               disabled={savingPassword}
