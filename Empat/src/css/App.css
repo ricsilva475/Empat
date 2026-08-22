@@ -221,3 +221,12 @@ main{
     justify-content: center;
   }
 }
+
+@media (max-width: 420px) {
+  #atleta-header, #goals-header, #session-header{
+    display: block !important;
+  }
+  #btn-new-athlete, #btn-new-goal, #btn-new-session{
+    margin-top: 15px !important;
+  }
+}

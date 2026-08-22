@@ -287,7 +287,7 @@ export default function GoalsComponent() {
 
   return (
     <div className="space-y-6" data-testid="goals-page">
-      <div className="flex items-center justify-between">
+      <div id="goals-header" className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tighter">
             Metas
@@ -299,6 +299,7 @@ export default function GoalsComponent() {
         </div>
 
         <button
+          id="btn-new-goal"
           onClick={() => setShow(!show)}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:opacity-90 transition-all"
           data-testid="goal-add-button"

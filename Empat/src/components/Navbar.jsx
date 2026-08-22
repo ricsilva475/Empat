@@ -13,12 +13,8 @@ const nav = [
   { to: "/menu/avaliacoes_coletivas", label: "Avaliações colectivas", icon: ClipboardList },
   { to: "/menu/calendario", label: "Calendário", icon: CalendarDays },
   { to: "/menu/recursos", label: "Recursos Pedagógicos", icon: NotebookPen },
- 
-  
-  { to: "/menu/perfil", label: "Perfil", icon: UserRound },
   { to: "/menu/metas", label: "Metas", icon: Target },
-  
-
+  { to: "/menu/perfil", label: "Perfil", icon: UserRound },
   
 /*
 { to: "/menu/avaliacoescol", label: "Avaliações colectivas", icon: ClipboardList },

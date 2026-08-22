@@ -209,12 +209,12 @@ export default function Athletes() {
     };
   return (
     <div className="space-y-6" data-testid="athletes-page">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div id="atleta-header" className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tighter">Atletas</h1>
           <p className="text-slate-500 mt-1">{atletasNum} no total</p>
         </div>
-        <button onClick={startNewGroup} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition btn-hover-orange" data-testid="add-athlete-btn">
+        <button id="btn-new-athlete" onClick={startNewGroup} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition btn-hover-orange" data-testid="add-athlete-btn">
           <Plus className="w-4 h-4" /> Novo atleta
         </button>
       </div>
