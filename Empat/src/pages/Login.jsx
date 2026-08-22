@@ -82,7 +82,7 @@ export default function Login() {
             </button>
             <br></br>
         
-           <button
+           {/*<button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
@@ -112,7 +112,7 @@ export default function Login() {
                   </svg>
                 )}
                 <span>{loading ? "A entrar..." : "Entrar com Google"}</span>
-            </button>
+            </button>*/}
           </form>
 
           <div className="mt-6 text-sm text-slate-500 text-center">
