@@ -109,29 +109,33 @@ export default function AthleteDetail() {
         <ArrowLeft className="w-4 h-4"/> Voltar
       </Link>
 
-      <div className="rounded-2xl bg-white border border-slate-200 p-6 flex items-center gap-5">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-3xl">{data.name[0]?.toUpperCase()}</div>
-        <div className="flex-1">
-          <h1 className="font-display text-3xl font-bold tracking-tighter">{data.name}</h1>
-          <div className="text-slate-500 capitalize mt-1">
-            {data.sport} · {data.age} anos
-            {data.position ? ` · ${data.position}` : ""}
-            {grupos.length > 0 ? ` · ${grupos[0].name}` : " · Sem turma"}
-          </div>
+      <div className="rounded-2xl bg-white border border-slate-200 p-6 flex xl:flex-row flex-col gap-5">
+        <div className="flex items-start gap-5">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-3xl">{data.name[0]?.toUpperCase()}</div>
+          <div className="flex-1">
+            <h1 className="font-display text-3xl font-bold tracking-tighter">{data.name}</h1>
+            <div className="text-slate-500 capitalize mt-1">
+              {data.sport} · {data.age} anos
+              {data.position ? ` · ${data.position}` : ""}
+              {grupos.length > 0 ? ` · ${grupos[0].name}` : " · Sem turma"}
+            </div>
 
-          
+            
+          </div>
+        </div>  
+        <div className="flex sm:flex-row flex-col items-center justify-center xl:items-center xl:justify-end gap-3 xl:flex-1">
+          <Link
+            to={`/menu/avaliacao_individual?athlete=${id}`}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition"
+            data-testid="athlete-ai-feedback"
+          >
+            Fazer Avaliação
+          </Link>
+          <button onClick={runFeedback} disabled={loadingAi} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-60 transition" data-testid="athlete-ai-feedback">
+            {loadingAi ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
+            Feedback IA
+          </button>
         </div>
-        <Link
-          to={`/menu/avaliacao_individual?athlete=${id}`}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition"
-          data-testid="athlete-ai-feedback"
-        >
-          Fazer Avaliação
-        </Link>
-        <button onClick={runFeedback} disabled={loadingAi} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-60 transition" data-testid="athlete-ai-feedback">
-          {loadingAi ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
-          Feedback IA
-        </button>
       </div>
       <h2 className="font-display text-xl font-bold">Média dos últimos 30 dias</h2>
       <div className="grid md:grid-cols-4 gap-4">
@@ -190,7 +194,7 @@ export default function AthleteDetail() {
         </div>
         
         {chartData.length === 0 ? (
-          <p className="text-slate-500 mt-4 text-sm">Sem avaliações ainda. Vai a <Link to="/app/avaliacoes" className="text-cyan-600 font-semibold">Avaliações</Link>.</p>
+          <p className="text-slate-500 mt-4 text-sm">Sem avaliações ainda. Vai a <Link to={`/menu/avaliacao_individual?athlete=${id}`} className="text-cyan-600 font-semibold">Avaliações</Link>.</p>
         ) : (
           <div className="h-72 mt-4">
             <ResponsiveContainer>
