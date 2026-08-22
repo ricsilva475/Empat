@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Avaliacoes } from "../js/avaliacoes";
 import { INDIVIDUAL_SKILLS, SOFT_SKILLS } from "../js/constants";
@@ -26,6 +26,9 @@ function isInvalidValue(v) {
 }
 
 export default function Assessments() {
+  const [searchParams] = useSearchParams();
+  const athleteIdFromUrl = searchParams.get("athlete");
+
   const [athletes, setAthletes] = useState([]);
   const [athleteId, setAthleteId] = useState("");
   const [answers, setAnswers] = useState({});
@@ -49,6 +52,18 @@ export default function Assessments() {
     }
     getAtletas();
   }, []);
+
+  useEffect(() => {
+  if (athleteIdFromUrl && athletes.length > 0) {
+    const atletaExiste = athletes.some(
+      athlete => String(athlete.id) === String(athleteIdFromUrl)
+    );
+
+    if (atletaExiste) {
+      setAthleteId(athleteIdFromUrl);
+    }
+  }
+}, [athleteIdFromUrl, athletes]);
 
   const setAns = (skillId, phase, val) =>
     setAnswers((p) => ({ ...p, [`${skillId}-${phase}`]: val }));
