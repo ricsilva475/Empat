@@ -495,9 +495,8 @@ export default function GoalsComponent() {
                   </div>
                 </div>
               </div>
+              <div className="flex flex-row justify-around md:justify-end gap-3 mt-6">
 
-              {/* Botões de ação - ocupam toda a largura */}
-              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
                 <button
                   onClick={() => {
                     setShow(false);
@@ -509,7 +508,7 @@ export default function GoalsComponent() {
                       deadline: "",
                     });
                   }}
-                  className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold hover:bg-slate-200 transition-all order-2 sm:order-1"
+                  className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold hover:bg-slate-200 transition-all"
                 >
                   Cancelar
                 </button>
@@ -517,11 +516,12 @@ export default function GoalsComponent() {
                 <button
                   onClick={addGoal}
                   disabled={saving}
-                  className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:bg-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+                  className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:bg-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="goal-save"
                 >
                   {saving ? "A guardar..." : "Guardar meta"}
                 </button>
+
               </div>
             </div>
           )}

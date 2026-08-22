@@ -247,7 +247,7 @@ export default function Assessments() {
     />
   </div>
 
-    <div className="flex gap-3 justify-end">
+    <div className="flex gap-3 justify-around md:justify-end">
       <Link
         to="/menu"
         className="inline-block px-5 py-3 rounded-full bg-slate-100 font-semibold btn-hover-yellow"

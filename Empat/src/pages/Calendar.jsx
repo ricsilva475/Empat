@@ -178,7 +178,7 @@ export default function CalendarPage() {
             <label className="text-sm font-medium">Notas</label>
             <textarea value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={2} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"/>
           </div>
-          <div className="md:col-span-2 flex justify-end gap-3">
+          <div className="md:col-span-2 flex justify-around md:justify-end gap-3">
             <button type="button" onClick={()=>setShow(false)} className="px-5 py-2.5 rounded-full bg-slate-100 btn-hover-yellow">Cancelar</button>
             <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold btn-hover-green" data-testid="session-save">{editingClass ? "Atualizar" : "Guardar"}</button>
           </div>

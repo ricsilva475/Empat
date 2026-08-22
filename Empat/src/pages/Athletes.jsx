@@ -248,7 +248,7 @@ export default function Athletes() {
             <textarea id="athlete-notes" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={2} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200" data-testid="athlete-notes"/>
           </div>
           <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-1">
               <div className="font-semibold text-slate-800 text-sm">
                 Turmas do atleta
               </div>
@@ -290,8 +290,8 @@ export default function Athletes() {
                         {grupo.name[0]}
                       </div>
 
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold truncate">
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <div className="text-sm font-semibold truncate max-w-[120px] sm:max-w-[180px] lg:max-w-[220px]">
                           {grupo.name}
                         </div>
 
@@ -305,7 +305,7 @@ export default function Athletes() {
               </div>
             )}
           </div>
-          <div className="md:col-span-2 flex gap-3 justify-end">
+          <div className="md:col-span-2 flex gap-3 justify-around md:justify-end">
             <button type="button" onClick={()=>setShowForm(false)} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold btn-hover-yellow">Cancelar</button>
             <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green" data-testid="athlete-save">{editingAthlete ? "Atualizar" : "Guardar"}</button>
           </div>

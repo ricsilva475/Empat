@@ -32,6 +32,11 @@ export default function ColectiveAssessments() {
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
   const [showScale, setShowScale] = useState(false);
+  const [skillId, setSkillId] = useState("");
+  
+  const filteredSkills = skillId
+  ? GROUP_SKILLS.filter(skill => skill.id === skillId)
+  : GROUP_SKILLS;
 
   useEffect(() => {
     async function getGroups() {
@@ -79,22 +84,51 @@ export default function ColectiveAssessments() {
       </div>
 
       <div className="rounded-2xl bg-white border border-slate-200 p-5">
-        <label className="text-sm font-medium text-slate-700 block mb-1.5">
-          Lista de Turmas
-        </label>
-        <select
-          value={groupId}
-          onChange={(e) => setGroupId(e.target.value)}
-          className="w-full md:w-96 px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
-          data-testid="assessment-group-select"
-        >
-          <option value="">— Escolhe uma turma —</option>
-          {groups.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </select>
+        <div className="grid md:grid-cols-2 gap-4">
+
+          <div>
+            <label className="text-sm font-medium text-slate-700 block mb-1.5">
+              Lista de Turmas
+            </label>
+
+            <select
+              value={groupId}
+              onChange={(e) => setGroupId(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+              data-testid="assessment-group-select"
+            >
+              <option value="">— Escolhe uma turma —</option>
+
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-slate-700 block mb-1.5">
+              Soft Skills
+            </label>
+
+            <select
+              value={skillId}
+              onChange={(e) => setSkillId(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+              data-testid="assessment-skill-select"
+            >
+              <option value="">— Escolhe uma Soft Skill —</option>
+
+              {GROUP_SKILLS.map((skill) => (
+                <option key={skill.id} value={skill.id}>
+                  {skill.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+        </div>
       </div>
 
       <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
@@ -116,7 +150,7 @@ export default function ColectiveAssessments() {
           </div>
         </div>
 
-        {GROUP_SKILLS.map((s, idx) => {
+        {filteredSkills.map((s, idx) => {
           const ini = answers[`${s.id}-ini`] ?? "";
           const fim = answers[`${s.id}-fim`] ?? "";
           const media = calcularMedia(ini, fim);
@@ -191,7 +225,7 @@ export default function ColectiveAssessments() {
         />
       </div>
 
-      <div className="flex gap-3 justify-end">
+      <div className="flex gap-3 justify-center sm:justify-end">
         <Link
           to="/menu"
           className="inline-block px-5 py-3 rounded-full bg-slate-100 font-semibold btn-hover-yellow"

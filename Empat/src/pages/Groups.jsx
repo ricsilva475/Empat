@@ -273,7 +273,7 @@ const loadGroups = async () => {
 
           {/* Lista de atletas com checkboxes — estilo Avaliações */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-1">
               <div className="font-semibold text-slate-800 text-sm">Adicionar atletas à turma:</div>
               <div className="text-xs text-slate-500">{form.athlete_ids.length} selecionado(s) · {athletes.length} disponíveis</div>
             </div>
@@ -321,10 +321,10 @@ const loadGroups = async () => {
             )}
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-around md:justify-end gap-3">
             <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 font-semibold btn-hover-yellow transition">Cancelar</button>
             <button type="submit" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green transition" data-testid="group-save">
-              {editingGroup ? "Guardar alterações" : "Criar turma"}
+              {editingGroup ? "Guardar" : "Criar turma"}
             </button>
           </div>
         </form>
