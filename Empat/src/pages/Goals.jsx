@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Goals } from "../js/goals";
@@ -12,7 +12,9 @@ export default function GoalsComponent() {
   const [error, setError] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("todas");
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [allGoals, setAllGoals] = useState([]); // Guardar todas as metas carregadas
 
   const currentYear = new Date().getFullYear();
 
@@ -47,42 +49,41 @@ export default function GoalsComponent() {
     getAtletas();
   }, []);
 
-  // Carregar metas
+  // Carregar todas as metas uma única vez
   useEffect(() => {
-    async function loadGoals() {
+    async function loadAllGoals() {
       try {
-        setLoading(true);
+        setInitialLoading(true);
         const data = await Goals.getAllData();
-        setGoals(data || []);
+        setAllGoals(data || []);
       } catch (e) {
         console.warn("Erro ao carregar metas. Tenta novamente.");
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     }
-    loadGoals();
+    loadAllGoals();
   }, []);
 
-  // Carregar metas quando o atleta muda
+  // Filtrar metas quando o atleta muda (sem reload)
   useEffect(() => {
     if (selectedAthlete) {
-      async function loadAthleteGoals() {
-        try {
-          setLoading(true);
-          const data = await Goals.getGoalsByAtleta(String(selectedAthlete));
-          setGoals(data);
-        } catch (e) {
-          console.warn("Erro ao carregar metas do atleta.", e);
-          setError("Erro ao carregar metas do atleta.");
-        } finally {
-          setLoading(false);
-        }
-      }
-      loadAthleteGoals();
+      setLoading(true);
+      // Usar setTimeout para dar tempo ao DOM de atualizar
+      const timer = setTimeout(() => {
+        const filteredGoals = allGoals.filter(
+          goal => String(goal.athlete_id) === String(selectedAthlete)
+        );
+        setGoals(filteredGoals);
+        setLoading(false);
+      }, 50);
+      
+      return () => clearTimeout(timer);
     } else {
       setGoals([]);
+      setLoading(false);
     }
-  }, [selectedAthlete]);
+  }, [selectedAthlete, allGoals]);
 
   const remainingDays = (deadline) => {
     if (!deadline) {
@@ -190,8 +191,13 @@ export default function GoalsComponent() {
 
       await Goals.insert(newGoal);
       
+      // Atualizar a lista local sem recarregar
       const updatedGoals = await Goals.getGoalsByAtleta(String(selectedAthlete));
       setGoals(updatedGoals);
+      
+      // Atualizar também o cache de todas as metas
+      const updatedAllGoals = await Goals.getAllData();
+      setAllGoals(updatedAllGoals);
 
       setForm({
         description: "",
@@ -225,8 +231,17 @@ export default function GoalsComponent() {
 
       await Goals.toggleCompleted(id, !goal.completed);
       
-      const updatedGoals = await Goals.getGoalsByAtleta(String(selectedAthlete));
+      // Atualizar localmente sem recarregar
+      const updatedGoals = goals.map(g => 
+        g.id === id ? { ...g, completed: !g.completed } : g
+      );
       setGoals(updatedGoals);
+      
+      // Atualizar também o cache de todas as metas
+      const updatedAllGoals = allGoals.map(g => 
+        g.id === id ? { ...g, completed: !g.completed } : g
+      );
+      setAllGoals(updatedAllGoals);
     } catch (e) {
       console.error("Erro ao atualizar meta:", e);
       setError("Erro ao atualizar a meta. Tenta novamente.");
@@ -241,8 +256,13 @@ export default function GoalsComponent() {
     try {
       await Goals.delete(id);
       
-      const updatedGoals = await Goals.getGoalsByAtleta(String(selectedAthlete));
+      // Atualizar localmente sem recarregar
+      const updatedGoals = goals.filter(g => g.id !== id);
       setGoals(updatedGoals);
+      
+      // Atualizar também o cache de todas as metas
+      const updatedAllGoals = allGoals.filter(g => g.id !== id);
+      setAllGoals(updatedAllGoals);
     } catch (e) {
       console.error("Erro ao eliminar meta:", e);
       setError("Erro ao eliminar a meta. Tenta novamente.");
@@ -274,7 +294,8 @@ export default function GoalsComponent() {
       remainingDays(g.deadline) < 0
   ).length;
 
-  if (loading && selectedAthlete) {
+  // Loading inicial (apenas na primeira carga)
+  if (initialLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -574,7 +595,7 @@ export default function GoalsComponent() {
             </button>
           </div>
 
-          {athleteGoals.length > 0 && (
+          {athleteGoals.length > 0 && !loading && (
             <>
               {/* Cards de estatísticas - responsivos */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
@@ -690,6 +711,12 @@ export default function GoalsComponent() {
                   ))}
               </div>
             </>
+          )}
+
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
+            </div>
           )}
 
           {athleteGoals.length === 0 && !loading && (

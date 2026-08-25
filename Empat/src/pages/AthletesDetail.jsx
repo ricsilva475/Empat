@@ -1,4 +1,3 @@
-
 import React, {useEffect, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { SOFT_SKILLS } from "../js/constants";
@@ -82,7 +81,7 @@ export default function AthleteDetail() {
     return medias;
   };
 
-  if (!data) return <div className="text-slate-500\">A carregar...</div>;
+  if (!data) return <div className="text-slate-500">A carregar...</div>;
 
   const avaliacoesFiltradas = (avaliacoes || []).slice(-numeroRegistos);
 
@@ -131,7 +130,12 @@ export default function AthleteDetail() {
           >
             Fazer Avaliação
           </Link>
-          <button onClick={runFeedback} disabled={loadingAi} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-60 transition" data-testid="athlete-ai-feedback">
+          <button 
+            onClick={runFeedback} 
+            disabled={loadingAi} 
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-500 text-white font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-60" 
+            data-testid="athlete-ai-feedback"
+          >
             {loadingAi ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
             Feedback IA
           </button>
