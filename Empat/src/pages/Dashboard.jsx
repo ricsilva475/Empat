@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import { SOFT_SKILLS, SKILL_MAP } from "../js/constants";
-import { Users, ClipboardList, NotebookPen, CalendarDays, Sparkles } from "lucide-react";
+import { Users, ClipboardList, NotebookPen, CalendarDays, Sparkles, UsersRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
 import { useAuth } from "../context/AuthContext";
@@ -112,11 +111,41 @@ export default function Dashboard() {
         <div className="lg:col-span-2">
 
           <div className="rounded-2xl bg-white border border-slate-200 p-6">
+            {/* TABS PARA ALTERNAR ENTRE GRÁFICOS */}
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                onClick={() => setGraficoAtivo(0)}
+                className={`
+                  px-4 py-2 rounded-full text-sm font-medium transition-all
+                  ${graficoAtivo === 0 
+                    ? 'bg-cyan-600 text-white shadow-md' 
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }
+                `}
+                data-testid="tab-atletas"
+              >
+                <Users className="w-4 h-4 inline-block mr-2" />
+                Atletas
+              </button>
+              <button
+                onClick={() => setGraficoAtivo(1)}
+                className={`
+                  px-4 py-2 rounded-full text-sm font-medium transition-all
+                  ${graficoAtivo === 1 
+                    ? 'bg-cyan-600 text-white shadow-md' 
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }
+                `}
+                data-testid="tab-turmas"
+              >
+                <UsersRound className="w-4 h-4 inline-block mr-2" />
+                Turmas
+              </button>
+            </div>
+
             {graficoAtivo === 0 ? (
               /* GRÁFICO DOS ATLETAS */
               <>
-
-              <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="font-display text-xl font-bold">Média dos atletas por soft skill</h2>
@@ -141,13 +170,10 @@ export default function Dashboard() {
                   </div>
                   ))}
                   </div>
-                </div>
               </>
-          ) : (
-
-          /* GRÁFICO DAS TURMAS */
-            <>
-              <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-6">
+            ) : (
+              /* GRÁFICO DAS TURMAS */
+              <>
                 <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-display text-xl font-bold">Média das turmas por soft skill</h2>
@@ -172,38 +198,13 @@ export default function Dashboard() {
                   </div>
                 ))}
                 </div>
-              </div>
-            </>
-          )}
-          {/* BOLAS DO SLIDESHOW */}
-          <div className="flex justify-center items-center gap-2 mt-5">
-
-            <button
-              onClick={() => setGraficoAtivo(0)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-              graficoAtivo === 0
-                ? "bg-cyan-500 w-7"
-                : "bg-slate-300 hover:bg-slate-400"
-              }`}
-              aria-label="Mostrar gráfico dos atletas"
-            />
-
-            <button
-              onClick={() => setGraficoAtivo(1)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-              graficoAtivo === 1
-                ? "bg-cyan-500 w-7"
-                : "bg-slate-300 hover:bg-slate-400"
-              }`}
-              aria-label="Mostrar gráfico das turmas"
-            />
-
+              </>
+            )}
           </div>
         </div>
-      </div>
 
         <div className="rounded-2xl bg-white border border-slate-200 p-6">
-          <h2 className="font-display text-xl font-bold">Atletas recentes</h2>
+          <h2 className="font-display text-xl font-bold">Atletas vistos recentemente:</h2>
           {athletes.length === 0 && (
             <div className="mt-6 text-sm text-slate-500">
               Ainda não tens aletas. <Link to="/menu/atletas" className="text-cyan-600 font-semibold">Adiciona o primeiro</Link>.

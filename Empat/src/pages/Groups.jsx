@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../js/constants";
 import { Plus, Trash2, Users, Save, X, Pencil, Check, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,18 +8,79 @@ import { confirmToast } from "../components/DeleteToast";
 
 import { toast } from "react-toastify";
 
+// Cache keys
+const CACHE_KEYS = {
+  GROUPS: 'cache_groups',
+  ATHLETES: 'cache_athletes',
+  ATHLETE_GROUPS: 'cache_athlete_groups',
+  TIMESTAMP: 'cache_timestamp'
+};
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
 export default function Groups() {
   const [groups, setGroups] = useState([]);
   const [athletes, setAthletes] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [editingGroup, setEditingGroup] = useState(null); // group object or null
+  const [editingGroup, setEditingGroup] = useState(null);
   const [form, setForm] = useState({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
   const [athleteGroups, setAthleteGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Verificar se o cache é válido
+  const isCacheValid = useCallback(() => {
+    const timestamp = localStorage.getItem(CACHE_KEYS.TIMESTAMP);
+    if (!timestamp) return false;
+    const elapsed = Date.now() - parseInt(timestamp, 10);
+    return elapsed < CACHE_DURATION;
+  }, []);
 
-  useEffect(() => {
-  async function loadData() {
+  // Carregar dados do cache
+  const loadFromCache = useCallback(() => {
     try {
+      const cachedGroups = localStorage.getItem(CACHE_KEYS.GROUPS);
+      const cachedAthletes = localStorage.getItem(CACHE_KEYS.ATHLETES);
+      const cachedAthleteGroups = localStorage.getItem(CACHE_KEYS.ATHLETE_GROUPS);
+
+      if (cachedGroups && cachedAthletes && cachedAthleteGroups) {
+        setGroups(JSON.parse(cachedGroups));
+        setAthletes(JSON.parse(cachedAthletes));
+        setAthleteGroups(JSON.parse(cachedAthleteGroups));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Erro ao carregar cache:", e);
+      return false;
+    }
+  }, []);
+
+  // Guardar dados no cache
+  const saveToCache = useCallback((groupsData, athletesData, athleteGroupsData) => {
+    try {
+      localStorage.setItem(CACHE_KEYS.GROUPS, JSON.stringify(groupsData));
+      localStorage.setItem(CACHE_KEYS.ATHLETES, JSON.stringify(athletesData));
+      localStorage.setItem(CACHE_KEYS.ATHLETE_GROUPS, JSON.stringify(athleteGroupsData));
+      localStorage.setItem(CACHE_KEYS.TIMESTAMP, Date.now().toString());
+    } catch (e) {
+      console.error("Erro ao guardar cache:", e);
+    }
+  }, []);
+
+  // Função para carregar todos os dados
+  const loadAllData = useCallback(async (forceRefresh = false) => {
+    // Se o cache for válido e não for forçado, carregar do cache
+    if (!forceRefresh && isCacheValid()) {
+      const loaded = loadFromCache();
+      if (loaded) {
+        setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      setLoading(true);
+      
       const athletesData = await Atletas.getAllData();
       setAthletes(athletesData);
 
@@ -30,7 +91,6 @@ export default function Groups() {
 
       const groupsWithCount = await Promise.all(
         groupsData.map(async (group) => {
-
           const athleteIds = await Grupos.getAthletesByGroup(group.id);
 
           const groupAthletes = athletesData
@@ -46,14 +106,53 @@ export default function Groups() {
       );
 
       setGroups(groupsWithCount);
-
+      
+      // Guardar no cache
+      saveToCache(groupsWithCount, athletesData, athleteGroupsData);
+      
     } catch(e) {
       console.error(e);
+      toast.error("Erro ao carregar dados");
+    } finally {
+      setLoading(false);
     }
-  }
+  }, [isCacheValid, loadFromCache, saveToCache]);
 
-  loadData();
-}, []);
+  // Carregamento inicial
+  useEffect(() => {
+    loadAllData(false);
+  }, [loadAllData]);
+
+  // Função para atualizar a lista de grupos localmente
+  const updateLocalGroups = useCallback(async () => {
+    try {
+      const groupsData = await Grupos.getAllData();
+
+      const groupsWithCount = await Promise.all(
+        groupsData.map(async (group) => {
+          const athleteIds = await Grupos.getAthletesByGroup(group.id);
+
+          const groupAthletes = athletes
+            .filter(a => athleteIds.includes(a.id))
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+          return {
+            ...group,
+            atletasCount: groupAthletes.length,
+            groupAthletes
+          };
+        })
+      );
+
+      setGroups(groupsWithCount);
+      
+      // Atualizar cache
+      saveToCache(groupsWithCount, athletes, athleteGroups);
+      
+    } catch(e) {
+      console.error("Erro ao atualizar grupos:", e);
+    }
+  }, [athletes, athleteGroups, saveToCache]);
 
   const resetForm = () => {
     setForm({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
@@ -81,13 +180,11 @@ export default function Groups() {
       focus_skill: group.focus_skill,
       description: group.notes || "",
       athlete_ids: athleteIds,
-
     });
 
     setShowForm(true);
   };
 
-  
   const deleteGrupo = async (id) => {
     confirmToast("Eliminar turma?", async () => {
       try {
@@ -104,13 +201,20 @@ export default function Groups() {
 
         await Grupos.delete(id);
 
-        const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
+        // Atualizar localmente - remover o grupo
+        const updatedGroups = groups.filter(g => g.id !== id);
+        setGroups(updatedGroups);
+        
+        // Atualizar athleteGroups localmente
+        const updatedAthleteGroups = athleteGroups.filter(
+          ag => String(ag.group_id) !== String(id)
+        );
         setAthleteGroups(updatedAthleteGroups);
 
-        await loadGroups();
+        // Atualizar cache
+        saveToCache(updatedGroups, athletes, updatedAthleteGroups);
 
         toast.success("Grupo eliminado com sucesso!");
-
       } catch (e) {
         console.error(e);
         toast.error("Erro ao eliminar grupo!");
@@ -118,61 +222,39 @@ export default function Groups() {
     });
   };
 
-const loadGroups = async () => {
-  const data = await Grupos.getAllData();
-
-   const groupsWithCount = await Promise.all(
-    data.map(async (group) => {
-      const athleteIds = await Grupos.getAthletesByGroup(group.id);
-
-      const groupAthletes = athletes
-        .filter(a => athleteIds.includes(a.id))
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      return {
-        ...group,
-        atletasCount: groupAthletes.length,
-        groupAthletes
-      };
-    })
-  );
-
-  setGroups(groupsWithCount);
-};
-
   const submit = async (e) => {
-      e.preventDefault();
+    e.preventDefault();
 
-      if (!form.name.trim()) {
-        toast.error("Indica o nome da turma");
-        return;
+    if (!form.name.trim()) {
+      toast.error("Indica o nome da turma");
+      return;
+    }
+
+    try {
+      if (editingGroup) {
+        await Grupos.update(editingGroup.id, form);
+        toast.success("Grupo editado com sucesso!");
+      } else {
+        await Grupos.insert(form);
+        toast.success("Grupo criado com sucesso!");
       }
 
-      try {
-        if (editingGroup) {
-          await Grupos.update(editingGroup.id, form);
-          toast.success("Grupo editado com sucesso!");
-        } else {
-          await Grupos.insert(form);
-          toast.success("Grupo criado com sucesso!");
-        }
+      // Atualizar athleteGroups
+      const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
+      setAthleteGroups(updatedAthleteGroups);
+      
+      // Atualizar grupos
+      await updateLocalGroups();
 
-        //const data = await Grupos.getAllData();
+      resetForm();
 
-        const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
-        setAthleteGroups(updatedAthleteGroups);
-        loadGroups();
-
-        resetForm();
-
-      } catch (e) {
-        console.error("ERRO AO GUARDAR GRUPO:", e);
-        toast.error("Erro ao guardar grupo");
-      }
+    } catch (e) {
+      console.error("ERRO AO GUARDAR GRUPO:", e);
+      toast.error("Erro ao guardar grupo");
+    }
   };
 
   const availableAthletes = athletes.filter((athlete) => {
-
     // Só atletas do desporto selecionado
     if (athlete.sport !== form.sport) {
       return false;
@@ -188,8 +270,7 @@ const loadGroups = async () => {
       return true;
     }
 
-    // Se estamos a editar, permitir os atletas
-    // que já pertencem à própria turma
+    // Se estamos a editar, permitir os atletas que já pertencem à própria turma
     if (
       editingGroup &&
       String(athleteGroup.group_id) === String(editingGroup.id)
@@ -214,7 +295,18 @@ const loadGroups = async () => {
     setShowForm(true);
   };
 
- 
+  // Mostrar loading apenas na primeira carga
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600">Carregando turmas...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6" data-testid="groups-page">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -322,7 +414,7 @@ const loadGroups = async () => {
           </div>
 
           <div className="flex justify-around md:justify-end gap-3">
-            <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 font-semibold btn-hover-yellow transition">Cancelar</button>
+            <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold hover:bg-slate-200 transition-all">Cancelar</button>
             <button type="submit" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green transition" data-testid="group-save">
               {editingGroup ? "Guardar" : "Criar turma"}
             </button>
@@ -354,9 +446,6 @@ const loadGroups = async () => {
                   <div className="flex items-center gap-1">
                     <button onClick={() => startEdit(g)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-group-${g.id}`}><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => deleteGrupo(g.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-group-${g.id}`}><Trash2 className="w-4 h-4" /></button>
-                    
-                    
-      
                   </div>
                 </div>
 
@@ -364,7 +453,6 @@ const loadGroups = async () => {
 
                 {groupAthletes.length > 0 ? (
                   <div className="mt-4 flex items-center">
-                    
                     <div className="flex -space-x-2">
                       {groupAthletes.slice(0, 5).map(a => (
                         <div
@@ -377,13 +465,11 @@ const loadGroups = async () => {
                       ))}
                     </div>
 
-
                     {groupAthletes.length > 5 && (
                       <div className="ml-2 text-xs font-semibold text-slate-600">
                         +{groupAthletes.length - 5}
                       </div>
                     )}
-
                   </div>
                 ) : (
                   <p className="mt-4 text-xs text-slate-400 italic">
