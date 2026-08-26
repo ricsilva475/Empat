@@ -5,6 +5,8 @@ import { Avaliacoes } from "../js/avaliacoes";
 import { GROUP_SKILLS } from "../js/constants";
 import { LIKERT_SCALE } from "../js/constants";
 import '../css/App.css';
+import arrow from "../assets/updown_arrow.png"
+
 
 function setValue(v) {
   const n = parseFloat(v);
@@ -393,7 +395,7 @@ export default function ColectiveAssessments() {
       <div className="rounded-2xl bg-white border border-slate-200 p-5" data-testid="likert-scale-section">
         <button
           onClick={() => setShowScale((v) => !v)}
-          className="w-full flex items-center justify-between text-left"
+          className="w-full flex items-center justify-between text-left gap-6"
           data-testid="likert-scale-toggle"
         >
           <div>
@@ -404,9 +406,13 @@ export default function ColectiveAssessments() {
               Critérios para atribuir os valores 1, 3 e 5 em cada soft skill.
             </p>
           </div>
-          <span className="text-slate-700 text-sm font-semibold">
-            {showScale ? "Ocultar ▲" : "Mostrar ▼"}
-          </span>
+          <img
+            src={arrow}
+            alt={showScale ? "Fechar" : "Abrir"}
+            className={`w-5 h-5 transition-transform duration-200 ${
+              showScale ? "rotate-180" : ""
+            }`}
+          />
         </button>
 
         {showScale && (
