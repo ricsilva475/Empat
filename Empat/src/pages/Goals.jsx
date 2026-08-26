@@ -322,7 +322,7 @@ export default function GoalsComponent() {
         <button
           id="btn-new-goal"
           onClick={() => setShow(!show)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:opacity-90 transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:opacity-90 transition-all btn-hover-orange"
           data-testid="goal-add-button"
         >
           <Plus className="w-4 h-4" />
@@ -537,7 +537,7 @@ export default function GoalsComponent() {
                 <button
                   onClick={addGoal}
                   disabled={saving}
-                  className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:bg-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:bg-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed btn-hover-green"
                   data-testid="goal-save"
                 >
                   {saving ? "A guardar..." : "Guardar meta"}

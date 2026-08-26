@@ -125,7 +125,7 @@ export default function AthleteDetail() {
         <div className="flex sm:flex-row flex-col items-center justify-center xl:items-center xl:justify-end gap-3 xl:flex-1">
           <Link
             to={`/menu/avaliacao_individual?athlete=${id}`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 transition btn-hover-orange"
             data-testid="athlete-ai-feedback"
           >
             Fazer Avaliação

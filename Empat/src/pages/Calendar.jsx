@@ -180,7 +180,7 @@ export default function CalendarPage() {
           </div>
           <div className="md:col-span-2 flex justify-around md:justify-end gap-3">
             <button type="button" onClick={()=>setShow(false)} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold hover:bg-slate-200 transition-all">Cancelar</button>
-            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:bg-cyan-700" data-testid="session-save">{editingClass ? "Atualizar" : "Guardar"}</button>
+            <button type="submit" className="px-5 py-2.5 rounded-full bg-cyan-600 text-white font-semibold hover:bg-cyan-700 btn-hover-green" data-testid="session-save">{editingClass ? "Atualizar" : "Guardar"}</button>
           </div>
         </form>
       )}

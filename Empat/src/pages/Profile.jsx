@@ -598,7 +598,7 @@ export default function Profile() {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-900 text-white font-semibold transition btn-hover-green disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 text-white font-semibold transition btn-hover-green disabled:opacity-60 disabled:cursor-not-allowed"
               data-testid="profile-save"
             >
               {saving ? (

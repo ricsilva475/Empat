@@ -394,7 +394,7 @@ export default function Assessments() {
             onClick={handleSubmit}
             disabled={saving}
             className={`
-              px-6 py-3 rounded-full font-semibold transition-all
+              px-6 py-3 rounded-full font-semibold transition-all btn-hover-green
               ${!athleteId 
                 ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
                 : 'bg-cyan-600 text-white hover:bg-cyan-700'
