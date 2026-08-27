@@ -67,17 +67,8 @@ export default function Groups() {
     }
   }, []);
 
-  // Função para carregar todos os dados
-  const loadAllData = useCallback(async (forceRefresh = false) => {
-    // Se o cache for válido e não for forçado, carregar do cache
-    if (!forceRefresh && isCacheValid()) {
-      const loaded = loadFromCache();
-      if (loaded) {
-        setLoading(false);
-        return;
-      }
-    }
-
+  // Função para carregar todos os dados (FORÇA REFRESH)
+  const refreshData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -116,43 +107,27 @@ export default function Groups() {
     } finally {
       setLoading(false);
     }
-  }, [isCacheValid, loadFromCache, saveToCache]);
+  }, [saveToCache]);
+
+  // Função para carregar dados iniciais (usa cache se válido)
+  const loadAllData = useCallback(async () => {
+    // Se o cache for válido, carregar do cache
+    if (isCacheValid()) {
+      const loaded = loadFromCache();
+      if (loaded) {
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Se não houver cache válido, carregar do servidor
+    await refreshData();
+  }, [isCacheValid, loadFromCache, refreshData]);
 
   // Carregamento inicial
   useEffect(() => {
-    loadAllData(false);
+    loadAllData();
   }, [loadAllData]);
-
-  // Função para atualizar a lista de grupos localmente
-  const updateLocalGroups = useCallback(async () => {
-    try {
-      const groupsData = await Grupos.getAllData();
-
-      const groupsWithCount = await Promise.all(
-        groupsData.map(async (group) => {
-          const athleteIds = await Grupos.getAthletesByGroup(group.id);
-
-          const groupAthletes = athletes
-            .filter(a => athleteIds.includes(a.id))
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-          return {
-            ...group,
-            atletasCount: groupAthletes.length,
-            groupAthletes
-          };
-        })
-      );
-
-      setGroups(groupsWithCount);
-      
-      // Atualizar cache
-      saveToCache(groupsWithCount, athletes, athleteGroups);
-      
-    } catch(e) {
-      console.error("Erro ao atualizar grupos:", e);
-    }
-  }, [athletes, athleteGroups, saveToCache]);
 
   const resetForm = () => {
     setForm({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
@@ -200,20 +175,9 @@ export default function Groups() {
         }
 
         await Grupos.delete(id);
-
-        // Atualizar localmente - remover o grupo
-        const updatedGroups = groups.filter(g => g.id !== id);
-        setGroups(updatedGroups);
         
-        // Atualizar athleteGroups localmente
-        const updatedAthleteGroups = athleteGroups.filter(
-          ag => String(ag.group_id) !== String(id)
-        );
-        setAthleteGroups(updatedAthleteGroups);
-
-        // Atualizar cache
-        saveToCache(updatedGroups, athletes, updatedAthleteGroups);
-
+        // Forçar refresh completo após eliminar
+        await refreshData();
         toast.success("Grupo eliminado com sucesso!");
       } catch (e) {
         console.error(e);
@@ -239,13 +203,8 @@ export default function Groups() {
         toast.success("Grupo criado com sucesso!");
       }
 
-      // Atualizar athleteGroups
-      const updatedAthleteGroups = await Grupos.getAthletesWithGroups();
-      setAthleteGroups(updatedAthleteGroups);
-      
-      // Atualizar grupos
-      await updateLocalGroups();
-
+      // Forçar refresh completo após criar/editar
+      await refreshData();
       resetForm();
 
     } catch (e) {
