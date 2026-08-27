@@ -122,6 +122,33 @@ export default function Athletes() {
     return data;
   }, []);
 
+  // Função para recarregar os dados de forma completa (força refresh)
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    
+    const gruposData = await loadGrupos();
+    setGrupos(gruposData);
+    
+    const athletesResult = await loadAtletas();
+    
+    if (athletesResult) {
+      const athletesWithSkills = await loadAvaliacoes(athletesResult.data);
+      
+      setList(athletesWithSkills);
+      setAtletasNum(athletesResult.numAtletas);
+      setGruposPorAtleta(athletesResult.gruposPorAtleta);
+      
+      saveToCache(
+        athletesWithSkills,
+        athletesResult.numAtletas,
+        gruposData,
+        athletesResult.gruposPorAtleta
+      );
+    }
+    
+    setLoading(false);
+  }, [loadAtletas, loadAvaliacoes, loadGrupos, saveToCache]);
+
   // Carregamento inicial com cache
   useEffect(() => {
     async function loadAll() {
@@ -165,31 +192,6 @@ export default function Athletes() {
     loadAll();
   }, [loadAtletas, loadAvaliacoes, loadGrupos, isCacheValid, loadFromCache, saveToCache]);
 
-  // Função para atualizar a lista localmente sem recarregar tudo
-  const updateLocalList = async (athleteId, newData) => {
-    // Atualizar a lista local
-    const updatedList = list.map(a => 
-      a.id === athleteId ? { ...a, ...newData } : a
-    );
-    setList(updatedList);
-    
-    // Atualizar também os grupos do atleta
-    if (newData.group_ids) {
-      const grupoData = await Atletas.getGroupsByAthlete(athleteId);
-      const updatedGruposPorAtleta = {
-        ...gruposPorAtleta,
-        [athleteId]: grupoData || []
-      };
-      setGruposPorAtleta(updatedGruposPorAtleta);
-      
-      // Atualizar cache
-      saveToCache(updatedList, atletasNum, grupos, updatedGruposPorAtleta);
-    } else {
-      // Atualizar cache
-      saveToCache(updatedList, atletasNum, grupos, gruposPorAtleta);
-    }
-  };
-
   const startEdit = async (athlete) => {
     const groupIds = await Atletas.getGroupsByAthlete(athlete.id);
 
@@ -219,21 +221,8 @@ export default function Athletes() {
     try {
       confirmToast("Eliminar atleta?", async () => {
         await Atletas.delete(id);
-
-        // Atualizar a lista localmente - remover o atleta
-        const updatedList = list.filter(a => a.id !== id);
-        setList(updatedList);
-        const newAtletasNum = Number(atletasNum) - 1;
-        setAtletasNum(newAtletasNum);
-        
-        // Remover dos grupos por atleta
-        const updatedGruposPorAtleta = { ...gruposPorAtleta };
-        delete updatedGruposPorAtleta[id];
-        setGruposPorAtleta(updatedGruposPorAtleta);
-        
-        // Atualizar cache
-        saveToCache(updatedList, newAtletasNum, grupos, updatedGruposPorAtleta);
-        
+        // Forçar refresh completo após eliminar
+        await refreshData();
         toast.success("Atleta eliminado com sucesso!");
       });
     } catch (e) {
@@ -251,42 +240,16 @@ export default function Athletes() {
           ...form,
           age: parseInt(form.age),
         });
-
-        // Atualizar localmente sem recarregar
-        await updateLocalList(editingAthlete.id, {
-          name: form.name,
-          age: parseInt(form.age),
-          sport: form.sport,
-          team: form.team,
-          position: form.position,
-          notes: form.notes,
-          group_ids: form.group_ids
-        });
-
+        // Forçar refresh completo após editar
+        await refreshData();
         toast.success("Atleta atualizado com sucesso!");
       } else {
-        const newAthlete = await Atletas.insert({
+        await Atletas.insert({
           ...form,
           age: parseInt(form.age),
         });
-
-        // Adicionar à lista local
-        if (newAthlete && newAthlete.id) {
-          const grupoData = await Atletas.getGroupsByAthlete(newAthlete.id);
-          const updatedList = [...list, { ...newAthlete, skills: {} }];
-          setList(updatedList);
-          const newAtletasNum = Number(atletasNum) + 1;
-          setAtletasNum(newAtletasNum);
-          const updatedGruposPorAtleta = {
-            ...gruposPorAtleta,
-            [newAthlete.id]: grupoData || []
-          };
-          setGruposPorAtleta(updatedGruposPorAtleta);
-          
-          // Atualizar cache
-          saveToCache(updatedList, newAtletasNum, grupos, updatedGruposPorAtleta);
-        }
-
+        // Forçar refresh completo após criar
+        await refreshData();
         toast.success("Atleta criado com sucesso!");
       }
 
