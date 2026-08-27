@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { LOGO_URL, SOFT_SKILLS, HERO_IMG, FEATURE_AI, FEATURE_EX } from "../js/constants";
 import { Sparkles, ClipboardList, Dumbbell, NotebookPen, Target, CalendarDays, ArrowRight, Brain, Eye, BarChart3, Heart, MessageCircle, Shield, Crown, Icon } from "lucide-react";
-
+import Footer from "../components/Footer"
 const skillIcons = { empatia: Heart, comunicacao: MessageCircle, resiliencia: Shield, lideranca: Crown };
 
 export default function Landing() {
@@ -291,15 +291,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="relative z-10 border-t border-slate-200 py-10 text-center text-sm text-slate-500">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src={LOGO_URL} alt="Empat" className="w-7 h-7" />
-            <span className="font-display font-bold text-slate-900">Empat.</span>
-          </div>
-          <div>© {new Date().getFullYear()} Empat. Soft skills pelo desporto.</div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   );
 }

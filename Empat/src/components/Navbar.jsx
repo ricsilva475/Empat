@@ -4,7 +4,7 @@ import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LOGO_URL } from "../js/constants";
 import { LayoutDashboard, Users, ClipboardList, Dumbbell, NotebookPen, Sparkles, Target, CalendarDays, UserCircle, Menu, X, LogOut, UserRound } from "lucide-react";
-
+import Footer from "../components/Footer"
 const nav = [
   { to: "/menu", end: true, label: "Visão Geral", icon: LayoutDashboard },
   { to: "/menu/atletas", label: "Atletas", icon: Users },
@@ -136,8 +136,11 @@ export default function Layout() {
   </div>
 )}
 
-  <main className="flex-1 p-6 pt-20 md:pt-6">
-  <Outlet />
+  <main className="flex-1 p-6 pt-20 md:pt-6 flex flex-col">
+    <div className="flex-1">
+      <Outlet />
+    </div>
+    <Footer/>
   </main>
 
 
