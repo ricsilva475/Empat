@@ -206,6 +206,37 @@ async getAthletesWithGroups() {
 
   return data;
 },
+async getGroupDetails(groupId) {
+    const user = await getUser();
+
+    if (!user) throw new Error("Utilizador não autenticado")
+    const { data, error } = await supabase
+      .from("groups")
+      .select("*")
+      .eq("id", groupId)
+      .eq("user_id", user.id)
+      .eq("eliminated", false)
+      .single();
+
+    if (error) throw error
+    //console.log("Dados do atleta:", data);
+    return data
+  },
+  async getAthletesDetailsByGroup(groupId) {
+  const { data, error } = await supabase
+    .from("group_athletes")
+    .select(`
+      athlete_id,
+      ativo,
+      athletes (*)
+    `)
+    .eq("group_id", groupId)
+    .eq("ativo", true);
+
+  if (error) throw error;
+
+  return data.map(item => item.athletes);
+},
     
 
     

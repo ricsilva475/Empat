@@ -430,11 +430,14 @@ export default function Groups() {
                       </div>
                     )}
                   </div>
+                  
                 ) : (
                   <p className="mt-4 text-xs text-slate-400 italic">
                     Sem atletas associados
                   </p>
                 )}
+                
+                <Link to={`/menu/turmas/${g.id}`} className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700">Ver Turma →</Link>
               </div>
             );
           })}

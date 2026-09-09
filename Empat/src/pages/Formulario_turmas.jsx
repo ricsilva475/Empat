@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Grupos } from "../js/groups";
 import { Avaliacoes } from "../js/avaliacoes";
 import { GROUP_SKILLS } from "../js/constants";
@@ -28,6 +28,9 @@ function isInvalidValue(v) {
 }
 
 export default function ColectiveAssessments() {
+  const [searchParams] = useSearchParams();
+  const groupIdFromUrl = searchParams.get("group");
+
   const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState("");
   const [answers, setAnswers] = useState({});
@@ -92,6 +95,19 @@ export default function ColectiveAssessments() {
     }
     getGroups();
   }, []);
+
+  useEffect(() => {
+    if (groupIdFromUrl && groups.length > 0) {
+
+      const grupoExiste = groups.some(
+        group => String(group.id) === String(groupIdFromUrl)
+      );
+
+      if (grupoExiste) {
+        setGroupId(groupIdFromUrl);
+      }
+    }
+  }, [groupIdFromUrl, groups]);
 
   const setAns = (skillId, phase, val) =>
     setAnswers((p) => ({ ...p, [`${skillId}-${phase}`]: val }));
@@ -189,9 +205,9 @@ export default function ColectiveAssessments() {
               data-testid="assessment-group-select"
             >
               <option value="">— Escolhe uma turma —</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
+              {groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
                 </option>
               ))}
             </select>

@@ -15,6 +15,7 @@ import Goals from "./pages/Goals";
 import Profile from "./pages/Profile";
 import Calendar from "./pages/Calendar";
 import Groups from "./pages/Groups";
+import GroupsDetail from "./pages/GroupsDetail";
 import RecursosP from "./pages/RecursosP";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/menu/atletas" element={<Athletes />} />
           <Route path="/menu/atletas/:id" element={<AthleteDetail />} />
           <Route path="/menu/turmas" element={<Groups />} />
+          <Route path="/menu/turmas/:id" element={<GroupsDetail />} />
           <Route path="/menu/avaliacao_individual" element={<Assessments />} />
           <Route path="/menu/avaliacoes_coletivas" element={<ColectiveAssessments />} />
           <Route path="/menu/exercicios" element={<Exercises />} />
