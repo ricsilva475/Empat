@@ -237,6 +237,22 @@ async getGroupDetails(groupId) {
 
   return data.map(item => item.athletes);
 },
+
+ async getAvaliacoesByGrupo(groupId) {
+  const { data, error } = await supabase
+    .from("avaliacoes_group")
+    .select("*")
+    .eq("group_id", groupId)
+    .eq("eliminated", false)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Erro ao buscar avaliações da turma:", error);
+    throw error;
+  }
+
+  return data || [];
+}
     
 
     

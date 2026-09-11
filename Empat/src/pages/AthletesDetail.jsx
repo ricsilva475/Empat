@@ -1,5 +1,5 @@
 import React, {useEffect, useState } from "react";
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link,  useLocation, useNavigate } from "react-router-dom";
 import { SOFT_SKILLS } from "../js/constants";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -15,6 +15,7 @@ export default function AthleteDetail() {
   const [loadingAi, setLoadingAi] = useState(false);
   const [grupos, setGrupos] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const [numeroRegistos, setNumeroRegistos] = useState(10);
 
   useEffect(() => {
@@ -101,12 +102,19 @@ export default function AthleteDetail() {
 
   return (
     <div className="space-y-6" data-testid="athlete-detail">
-      <Link
-        to={location.state?.from || "/menu/atletas"}
+      <button
+        onClick={() => {
+          if (location.state?.from === "turma") {
+            navigate(`/menu/turmas/${location.state.groupId}`);
+          } else {
+            navigate("/menu/atletas");
+          }
+        }}
         className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
       >
-        <ArrowLeft className="w-4 h-4"/> Voltar
-      </Link>
+        <ArrowLeft className="w-4 h-4" />
+        Voltar
+      </button>
 
       <div className="rounded-2xl bg-white border border-slate-200 p-6 flex xl:flex-row flex-col gap-5">
         <div className="flex items-start gap-5">
@@ -205,7 +213,7 @@ export default function AthleteDetail() {
               <LineChart data={chartData}>
                 <CartesianGrid stroke="#E2E8F0" strokeDasharray="3 3"/>
                 <XAxis dataKey="date" tick={{ fontSize: 12 }}/>
-                <YAxis domain={[0,5]}/>
+                <YAxis domain={[0,5]} ticks={[0, 1, 2, 3, 4, 5]}/>
                 <Tooltip/>
                 <Legend/>
                 {SOFT_SKILLS.map(s => <Line key={s.id} type="monotone" dataKey={s.id} name={s.name} stroke={s.color} strokeWidth={2.5} dot={{r:3}}/>)}

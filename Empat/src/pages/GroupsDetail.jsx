@@ -23,7 +23,6 @@ export default function GroupDetail() {
   const [data, setData] = useState(null);
   const [atletas, setAtletas] = useState([]);
   const [avaliacoes, setAvaliacoes] = useState([]);
-  const [medias30Dias, setMedias30Dias] = useState({});
   const [loadingAi, setLoadingAi] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [numeroRegistos, setNumeroRegistos] = useState(10);
@@ -33,6 +32,8 @@ export default function GroupDetail() {
       try {
         const groupData = await Grupos.getGroupDetails(id);
         const atletasData = await Grupos.getAthletesDetailsByGroup(id);
+        const avaliacao_coletiva = await Grupos.getAvaliacoesByGrupo(id);
+        console.warn("avaliacao coletiva: ", avaliacao_coletiva);
 
         // IMPORTANTE:
         // aqui precisas de uma função em Avaliacoes
@@ -41,11 +42,7 @@ export default function GroupDetail() {
 
         setData(groupData);
         setAtletas(atletasData);
-        //setAvaliacoes(avaliacoesData);
-
-        /*setMedias30Dias(
-          calcularMedias30Dias(avaliacoesData)
-        );*/
+        setAvaliacoes(avaliacao_coletiva);
 
       } catch (error) {
         console.error("Erro ao carregar detalhes da turma:", error);
@@ -55,46 +52,6 @@ export default function GroupDetail() {
     load();
   }, [id]);
 
-  const calcularMedias30Dias = (avaliacoes) => {
-    const agora = new Date();
-
-    const trintaDiasAtras = new Date();
-    trintaDiasAtras.setDate(
-      agora.getDate() - 30
-    );
-
-    const medias = {};
-
-    SOFT_SKILLS.forEach(skill => {
-      const avaliacoesValidas = avaliacoes.filter(avaliacao => {
-        const dataAvaliacao = new Date(
-          avaliacao.created_at
-        );
-
-        return (
-          dataAvaliacao >= trintaDiasAtras &&
-          dataAvaliacao <= agora &&
-          avaliacao[skill.id] > 0
-        );
-      });
-
-      if (avaliacoesValidas.length === 0) {
-        medias[skill.id] = 0;
-      } else {
-        const soma = avaliacoesValidas.reduce(
-          (total, avaliacao) =>
-            total + Number(avaliacao[skill.id]),
-          0
-        );
-
-        medias[skill.id] = Number(
-          (soma / avaliacoesValidas.length).toFixed(1)
-        );
-      }
-    });
-
-    return medias;
-  };
 
   const runFeedback = async () => {
     setLoadingAi(true);
@@ -121,21 +78,21 @@ export default function GroupDetail() {
   const avaliacoesFiltradas =
     (avaliacoes || []).slice(-numeroRegistos);
 
-  const chartData = avaliacoesFiltradas.map(a => ({
-    date: new Date(a.created_at).toLocaleDateString(
-      "pt-PT",
-      {
-        day: "2-digit",
-        month: "short"
-      }
-    ),
+    const chartData = avaliacoesFiltradas.map(a => ({
+      date: new Date(a.created_at).toLocaleDateString(
+        "pt-PT",
+        {
+          day: "2-digit",
+          month: "short"
+        }
+      ),
 
-    ...Object.fromEntries(
-      SOFT_SKILLS.map(skill => [
-        skill.id,
-        a[skill.id] > 0 ? a[skill.id] : null
-      ])
-    )
+      ...Object.fromEntries(
+        SOFT_SKILLS.map(skill => [
+          skill.id,
+          a[skill.id] > 0 ? a[skill.id] : null
+        ])
+      )
   }));
 
   return (
@@ -214,59 +171,6 @@ export default function GroupDetail() {
 
       </div>
 
-
-      {/* MÉDIAS */}
-
-      <h2 className="font-display text-xl font-bold">
-        Média dos últimos 30 dias
-      </h2>
-
-      <div className="grid md:grid-cols-4 gap-4">
-
-        {SOFT_SKILLS.map(skill => {
-
-          const media =
-            medias30Dias[skill.id] ?? 0;
-
-          return (
-            <div
-              key={skill.id}
-              className="rounded-2xl bg-white border border-slate-200 p-5"
-            >
-
-              <div
-                className="text-xs font-bold uppercase tracking-wider"
-                style={{ color: skill.color }}
-              >
-                {skill.name}
-              </div>
-
-              <div className="mt-2 text-3xl font-display font-bold">
-                {media}
-                <span className="text-base text-slate-400">
-                  /5
-                </span>
-              </div>
-
-              <div className="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden">
-
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${(media / 5) * 100}%`,
-                    background: skill.color
-                  }}
-                />
-
-              </div>
-
-            </div>
-          );
-        })}
-
-      </div>
-
-
       {/* FEEDBACK IA */}
 
       {feedback && (
@@ -332,6 +236,73 @@ export default function GroupDetail() {
 
         </div>
       )}
+
+      {/* ATLETAS DA TURMA */}
+
+      <div className="rounded-2xl bg-white border border-slate-200 p-6">
+
+        <div className="flex items-center justify-between">
+
+          <div>
+            <h2 className="font-display text-xl font-bold">
+              Atletas da turma
+            </h2>
+
+            <p className="text-sm text-slate-500 mt-1">
+              {atletas.length} atletas
+            </p>
+          </div>
+
+        </div>
+
+
+        {atletas.length === 0 ? (
+
+          <p className="text-slate-500 mt-4 text-sm">
+            Esta turma ainda não tem atletas.
+          </p>
+
+        ) : (
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+
+            {atletas.map(atleta => (
+
+              <Link
+                key={atleta.id}
+                to={`/menu/atletas/${atleta.id}`}
+                state={{ from: "turma", groupId: id }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 transition"
+              >
+
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold">
+                  {atleta.name?.[0]?.toUpperCase()}
+                </div>
+
+                <div>
+
+                  <div className="font-semibold text-slate-800">
+                    {atleta.name}
+                  </div>
+
+                  <div className="text-xs text-slate-500">
+                    {atleta.sport}
+                    {atleta.position
+                      ? ` · ${atleta.position}`
+                      : ""}
+                  </div>
+
+                </div>
+
+              </Link>
+
+            ))}
+
+          </div>
+
+        )}
+
+      </div>
 
 
       {/* EVOLUÇÃO */}
@@ -401,7 +372,7 @@ export default function GroupDetail() {
 
                 <XAxis dataKey="date" />
 
-                <YAxis domain={[0, 5]} />
+                <YAxis domain={[0, 5]}  ticks={[0, 1, 2, 3, 4, 5]}/>
 
                 <Tooltip />
 
@@ -428,74 +399,6 @@ export default function GroupDetail() {
         )}
 
       </div>
-
-
-      {/* ATLETAS DA TURMA */}
-
-      <div className="rounded-2xl bg-white border border-slate-200 p-6">
-
-        <div className="flex items-center justify-between">
-
-          <div>
-            <h2 className="font-display text-xl font-bold">
-              Atletas da turma
-            </h2>
-
-            <p className="text-sm text-slate-500 mt-1">
-              {atletas.length} atletas
-            </p>
-          </div>
-
-        </div>
-
-
-        {atletas.length === 0 ? (
-
-          <p className="text-slate-500 mt-4 text-sm">
-            Esta turma ainda não tem atletas.
-          </p>
-
-        ) : (
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
-
-            {atletas.map(atleta => (
-
-              <Link
-                key={atleta.id}
-                to={`/menu/atletas/${atleta.id}`}
-                className="flex items-center gap-3 p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 transition"
-              >
-
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold">
-                  {atleta.name?.[0]?.toUpperCase()}
-                </div>
-
-                <div>
-
-                  <div className="font-semibold text-slate-800">
-                    {atleta.name}
-                  </div>
-
-                  <div className="text-xs text-slate-500">
-                    {atleta.sport}
-                    {atleta.position
-                      ? ` · ${atleta.position}`
-                      : ""}
-                  </div>
-
-                </div>
-
-              </Link>
-
-            ))}
-
-          </div>
-
-        )}
-
-      </div>
-
 
       {/* OBSERVAÇÕES */}
 
