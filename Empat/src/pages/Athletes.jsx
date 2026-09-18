@@ -24,7 +24,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 export default function Athletes() {
   const [list, setList] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", age: 12, sport: "futebol", team: "", position: "", notes: "", group_ids: []});
+  const [form, setForm] = useState({ name: "", age: 12, sport: "Futebol", team: "", position: "", notes: "", group_ids: []});
   const [atletasNum, setAtletasNum] = useState("");
   const [editingAthlete, setEditingAthlete] = useState(null);
   const [grupos, setGrupos] = useState([]);
@@ -256,7 +256,7 @@ export default function Athletes() {
       setForm({
         name: "",
         age: 12,
-        sport: "futebol",
+        sport: "Futebol",
         team: "",
         position: "",
         notes: "",
@@ -276,7 +276,7 @@ export default function Athletes() {
     setForm({
       name: "",
       age: 12,
-      sport: "futebol",
+      sport: "Futebol",
       team: "",
       position: "",
       notes: "",
@@ -324,7 +324,7 @@ export default function Athletes() {
           <div>
             <label className="text-sm font-medium text-slate-700">Desporto</label>
             <select id="athlete-sport" value={form.sport} onChange={e=>setForm({...form,sport:e.target.value})} className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white" data-testid="athlete-sport">
-              {SPORTS.filter(s=>s!== "todos").map(s=><option key={s} value={s} className="capitalize">{s}</option>)}
+              {SPORTS.filter(s=>s!== "Todos").map(s=><option key={s} value={s} className="capitalize">{s}</option>)}
             </select>
           </div>
           <div>
@@ -351,7 +351,7 @@ export default function Athletes() {
               </div>
             </div>
 
-            {grupos.length === 0 ? (
+            {grupos.filter(grupo => grupo.sport === form.sport).length === 0 ? (
               <div className="text-sm text-slate-500 py-6 text-center">
                 Ainda não existem turmas.
               </div>
