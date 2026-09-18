@@ -310,7 +310,7 @@ export default function Groups() {
               <select value={form.focus_skill} onChange={e=>setForm({...form, focus_skill: e.target.value})}
                 className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white" data-testid="group-focus">
                 <option value="">— nenhuma —</option>
-                {SOFT_SKILLS.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                {SOFT_SKILLS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
           </div>
