@@ -353,7 +353,7 @@ export const GROUP_SKILLS = [
   {
     id: "gestaostress",
     name: "Gestão de Stress",
-    behavior: "o ambiente geral permanece focado e calmo em momentos críticos.",
+    behavior: "O ambiente geral permanece focado e calmo em momentos críticos.",
   },
 ];
 
