@@ -8,8 +8,9 @@ export const SOFT_SKILLS = [
   { id: "lideranca", name: "Liderança", color: "#06B6D4", bg: "bg-cyan-500", text: "text-cyan-600", soft: "bg-cyan-50 text-cyan-700 border-cyan-200" },
   { id: "resiliencia", name: "Resiliência", color: "#84CC16", bg: "bg-lime-500", text: "text-lime-600", soft: "bg-lime-50 text-lime-700 border-lime-200" },
   { id: "empatia", name: "Empatia", color: "#EC4899", bg: "bg-pink-500", text: "text-pink-600", soft: "bg-pink-50 text-pink-700 border-pink-200" },
-  { id: "tomadecisao", name: "Tomada de Decisão", color: "#A855F7", bg: "bg-purple-50₀", text: "text-purple-6₀₀", soft: "bg-purple-5₀ text-purple-7₀₀ border-purple-2₀₀" },
+  { id: "tomadecisao", name: "Tomada de Decisão", color: "#A855F7", bg: "bg-purple-500", text: "text-purple-600", soft: "bg-purple-50 text-purple-700 border-purple-200" },
   { id: "gestaostress", name: "Gestão de Stress", color: "#10B981", bg: "bg-green-500", text: "text-green-600", soft: "bg-green-50 text-green-700 border-green-200" },
+  { id: "frustracao", name: "Controlo de Frustração", color: "#aa0000", bg: "bg-green-500", text: "text-green-600", soft: "bg-green-50 text-green-700 border-green-200" },
 ];
 
 export const SKILL_MAP = Object.fromEntries(SOFT_SKILLS.map(s => [s.id, s]));
@@ -131,7 +132,7 @@ export const RESOURCES = [
     ]
   },
   {
-    id: "tolerancia-frustracao",
+    id: "frustracao",
     title: "Tolerância à Frustração",
     icon: Flame,
     color: "#EC4899",
@@ -317,6 +318,11 @@ export const INDIVIDUAL_SKILLS = [
     name: "Gestão de Stress",
     behavior: "Mantém a calma e não bloqueia sob pressão.",
   },
+  {
+    id: "frustracao",
+    name: "Controlo de Frustração",
+    behavior: "Existe controlo emocional perante erros, injustiças e adversidade.",
+  },
 ];
 
 export const GROUP_SKILLS = [
@@ -351,9 +357,9 @@ export const GROUP_SKILLS = [
     behavior: "O coletivo executa a estratégia planeada com critério e eficácia.",
   },
   {
-    id: "gestaostress",
-    name: "Gestão de Stress",
-    behavior: "O ambiente geral permanece focado e calmo em momentos críticos.",
+    id: "frustracao",
+    name: "Controlo de Frustração",
+    behavior: "Existe controlo emocional perante erros, injustiças e adversidade.",
   },
 ];
 
@@ -419,6 +425,15 @@ export const LIKERT_SCALE = [
       { value: 1, label: "Nunca", text: "Fica paralisado pela ansiedade, hiperventila, comete erros básicos por precipitação ou demonstra descontrolo emocional." },
       { value: 3, label: "Às vezes", text: "Controla a ansiedade no aquecimento, mas demonstra picos de descontrolo emocional em momentos decisivos do jogo/aula." },
       { value: 5, label: "Sempre", text: "Expressão facial serena sob pressão, usa pausas ou respiração para desacelerar o ritmo, mantém a eficácia técnica." },
+    ],
+  },
+  {
+    id: "frustracao",
+    name: "Controlo de Frustração",
+    levels: [
+      { value: 1,label: "Nunca",text: "Reage de forma negativa perante erros, derrotas ou decisões desfavoráveis, podendo desistir, discutir ou perder o controlo emocional." },
+      { value: 3,label: "Às vezes",text: "Demonstra alguma frustração perante erros ou situações adversas, mas consegue recuperar e voltar a concentrar-se após algum tempo." },
+      { value: 5,label: "Sempre",text: "Lida com erros, derrotas e situações adversas de forma equilibrada, mantém a concentração e utiliza a frustração como motivação para continuar e melhorar." },
     ],
   },
 ];

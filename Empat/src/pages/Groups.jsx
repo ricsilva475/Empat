@@ -1,33 +1,67 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { SOFT_SKILLS, SKILL_MAP, SPORTS } from "../js/constants";
-import { Plus, Trash2, Users, Save, X, Pencil, Check, Eye } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Users,
+  X,
+  Pencil,
+  Check,
+  Eye,
+  Search,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { Atletas } from "../js/athletes";
 import { Grupos } from "../js/groups";
-import { confirmToast } from "../components/DeleteToast";
-
 import { toast } from "react-toastify";
 
-// Cache keys
+// ============================================================
+// CACHE
+// ============================================================
+
 const CACHE_KEYS = {
-  GROUPS: 'cache_groups',
-  ATHLETES: 'cache_athletes',
-  ATHLETE_GROUPS: 'cache_athlete_groups',
-  TIMESTAMP: 'cache_timestamp'
+  GROUPS: "cache_groups_v2",
+  ATHLETES: "cache_groups_athletes_v2",
+  ATHLETE_GROUPS: "cache_groups_athlete_groups_v2",
+  TIMESTAMP: "cache_groups_timestamp_v2",
 };
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+// ============================================================
+// COMPONENT
+// ============================================================
 
 export default function Groups() {
   const [groups, setGroups] = useState([]);
   const [athletes, setAthletes] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
-  const [form, setForm] = useState({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
+
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    groupId: null,
+    groupName: "",
+  });
+
+  const [form, setForm] = useState({
+    name: "",
+    sport: "",
+    focus_skill: "",
+    description: "",
+    athlete_ids: [],
+  });
+
   const [athleteGroups, setAthleteGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Verificar se o cache é válido
+  // Pesquisa de atletas
+  const [athleteSearch, setAthleteSearch] = useState("");
+
+  // ==========================================================
+  // CACHE
+  // ==========================================================
+
   const isCacheValid = useCallback(() => {
     const timestamp = localStorage.getItem(CACHE_KEYS.TIMESTAMP);
     if (!timestamp) return false;
@@ -35,12 +69,13 @@ export default function Groups() {
     return elapsed < CACHE_DURATION;
   }, []);
 
-  // Carregar dados do cache
   const loadFromCache = useCallback(() => {
     try {
       const cachedGroups = localStorage.getItem(CACHE_KEYS.GROUPS);
       const cachedAthletes = localStorage.getItem(CACHE_KEYS.ATHLETES);
-      const cachedAthleteGroups = localStorage.getItem(CACHE_KEYS.ATHLETE_GROUPS);
+      const cachedAthleteGroups = localStorage.getItem(
+        CACHE_KEYS.ATHLETE_GROUPS
+      );
 
       if (cachedGroups && cachedAthletes && cachedAthleteGroups) {
         setGroups(JSON.parse(cachedGroups));
@@ -55,63 +90,81 @@ export default function Groups() {
     }
   }, []);
 
-  // Guardar dados no cache
-  const saveToCache = useCallback((groupsData, athletesData, athleteGroupsData) => {
-    try {
-      localStorage.setItem(CACHE_KEYS.GROUPS, JSON.stringify(groupsData));
-      localStorage.setItem(CACHE_KEYS.ATHLETES, JSON.stringify(athletesData));
-      localStorage.setItem(CACHE_KEYS.ATHLETE_GROUPS, JSON.stringify(athleteGroupsData));
-      localStorage.setItem(CACHE_KEYS.TIMESTAMP, Date.now().toString());
-    } catch (e) {
-      console.error("Erro ao guardar cache:", e);
-    }
-  }, []);
+  const saveToCache = useCallback(
+    (groupsData, athletesData, athleteGroupsData) => {
+      try {
+        localStorage.setItem(CACHE_KEYS.GROUPS, JSON.stringify(groupsData));
+        localStorage.setItem(CACHE_KEYS.ATHLETES, JSON.stringify(athletesData));
+        localStorage.setItem(
+          CACHE_KEYS.ATHLETE_GROUPS,
+          JSON.stringify(athleteGroupsData)
+        );
+        localStorage.setItem(CACHE_KEYS.TIMESTAMP, Date.now().toString());
+      } catch (e) {
+        console.error("Erro ao guardar cache:", e);
+      }
+    },
+    []
+  );
 
-  // Função para carregar todos os dados (FORÇA REFRESH)
+  // ==========================================================
+  // CARREGAR DADOS (FORÇA REFRESH)
+  // ==========================================================
+
   const refreshData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
+      // Atletas (todos, independentemente do desporto)
       const athletesData = await Atletas.getAllData();
-      setAthletes(athletesData);
 
+      // Relação atleta <-> turma
       const athleteGroupsData = await Grupos.getAthletesWithGroups();
-      setAthleteGroups(athleteGroupsData);
 
+      // Turmas
       const groupsData = await Grupos.getAllData();
 
-      const groupsWithCount = await Promise.all(
+      const groupsWithAthletes = await Promise.all(
         groupsData.map(async (group) => {
           const athleteIds = await Grupos.getAthletesByGroup(group.id);
 
           const groupAthletes = athletesData
-            .filter(a => athleteIds.includes(a.id))
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            .filter((athlete) =>
+              athleteIds.some((id) => String(id) === String(athlete.id))
+            )
+            .sort((a, b) =>
+              (a.name || "").localeCompare(b.name || "", "pt", {
+                sensitivity: "base",
+              })
+            );
 
           return {
             ...group,
             atletasCount: groupAthletes.length,
-            groupAthletes
+            groupAthletes,
           };
         })
       );
 
-      setGroups(groupsWithCount);
-      
-      // Guardar no cache
-      saveToCache(groupsWithCount, athletesData, athleteGroupsData);
-      
-    } catch(e) {
-      console.error(e);
-      toast.error("Erro ao carregar dados");
+      setAthletes(athletesData);
+      setAthleteGroups(athleteGroupsData);
+      setGroups(groupsWithAthletes);
+
+      // Cache
+      saveToCache(groupsWithAthletes, athletesData, athleteGroupsData);
+    } catch (e) {
+      console.error("Erro ao carregar dados das turmas:", e);
+      toast.error("Erro ao carregar atletas e turmas.");
     } finally {
       setLoading(false);
     }
   }, [saveToCache]);
 
-  // Função para carregar dados iniciais (usa cache se válido)
+  // ==========================================================
+  // CARREGAMENTO INICIAL (CACHE OU SERVIDOR)
+  // ==========================================================
+
   const loadAllData = useCallback(async () => {
-    // Se o cache for válido, carregar do cache
     if (isCacheValid()) {
       const loaded = loadFromCache();
       if (loaded) {
@@ -119,127 +172,33 @@ export default function Groups() {
         return;
       }
     }
-
-    // Se não houver cache válido, carregar do servidor
     await refreshData();
   }, [isCacheValid, loadFromCache, refreshData]);
 
-  // Carregamento inicial
   useEffect(() => {
     loadAllData();
   }, [loadAllData]);
 
+  // ==========================================================
+  // RESET
+  // ==========================================================
+
   const resetForm = () => {
-    setForm({ name: "", sport: "", focus_skill: "", description: "", athlete_ids: [] });
+    setForm({
+      name: "",
+      sport: "",
+      focus_skill: "",
+      description: "",
+      athlete_ids: [],
+    });
+    setAthleteSearch("");
     setEditingGroup(null);
     setShowForm(false);
   };
 
-  const toggleAthlete = (id) => {
-    setForm(p => ({
-      ...p,
-      athlete_ids: p.athlete_ids.includes(id)
-        ? p.athlete_ids.filter(x => x !== id)
-        : [...p.athlete_ids, id],
-    }));
-  };
-
-  const startEdit = async (group) => {
-    setEditingGroup(group);
-
-    const athleteIds = await Grupos.getAthletesByGroup(group.id);
-
-    setForm({
-      name: group.name,
-      sport: group.sport,
-      focus_skill: group.focus_skill,
-      description: group.notes || "",
-      athlete_ids: athleteIds,
-    });
-
-    setShowForm(true);
-  };
-
-  const deleteGrupo = async (id) => {
-    confirmToast("Eliminar turma?", async () => {
-      try {
-        const atletasNoGrupo = athleteGroups.filter(
-          ag => String(ag.group_id) === String(id)
-        );
-
-        if (atletasNoGrupo.length > 0) {
-          toast.error(
-            "Não é possível eliminar a turma porque existem atletas associados."
-          );
-          return;
-        }
-
-        await Grupos.delete(id);
-        
-        // Forçar refresh completo após eliminar
-        await refreshData();
-        toast.success("Turma eliminada com sucesso!");
-      } catch (e) {
-        console.error(e);
-        toast.error("Erro ao eliminar turma!");
-      }
-    });
-  };
-
-  const submit = async (e) => {
-    e.preventDefault();
-
-    if (!form.name.trim()) {
-      toast.error("Indica o nome da turma");
-      return;
-    }
-
-    try {
-      if (editingGroup) {
-        await Grupos.update(editingGroup.id, form);
-        toast.success("Turma editada com sucesso!");
-      } else {
-        await Grupos.insert(form);
-        toast.success("Turma criada com sucesso!");
-      }
-
-      // Forçar refresh completo após criar/editar
-      await refreshData();
-      resetForm();
-
-    } catch (e) {
-      console.error("ERRO AO GUARDAR TURMA:", e);
-      toast.error("Erro ao guardar Turma");
-    }
-  };
-
-  const availableAthletes = athletes.filter((athlete) => {
-    // Só atletas do desporto selecionado
-    if (athlete.sport !== form.sport) {
-      return false;
-    }
-
-    // Procurar se este atleta pertence a alguma turma ativa
-    const athleteGroup = athleteGroups.find(
-      ag => String(ag.athlete_id) === String(athlete.id)
-    );
-
-    // Não pertence a nenhuma turma
-    if (!athleteGroup) {
-      return true;
-    }
-
-    // Se estamos a editar, permitir os atletas que já pertencem à própria turma
-    if (
-      editingGroup &&
-      String(athleteGroup.group_id) === String(editingGroup.id)
-    ) {
-      return true;
-    }
-
-    // Pertence a outra turma → esconder
-    return false;
-  });
+  // ==========================================================
+  // NOVA TURMA
+  // ==========================================================
 
   const startNewGroup = () => {
     setForm({
@@ -247,124 +206,525 @@ export default function Groups() {
       sport: "",
       focus_skill: "",
       description: "",
-      athlete_ids: []
+      athlete_ids: [],
     });
-
+    setAthleteSearch("");
     setEditingGroup(null);
     setShowForm(true);
   };
 
-  // Mostrar loading apenas na primeira carga
+  // ==========================================================
+  // SELECIONAR / REMOVER ATLETA
+  // ==========================================================
+
+  const toggleAthlete = (id) => {
+    setForm((previous) => ({
+      ...previous,
+      athlete_ids: previous.athlete_ids.some(
+        (athleteId) => String(athleteId) === String(id)
+      )
+        ? previous.athlete_ids.filter(
+            (athleteId) => String(athleteId) !== String(id)
+          )
+        : [...previous.athlete_ids, id],
+    }));
+  };
+
+  // ==========================================================
+  // EDITAR TURMA
+  // ==========================================================
+
+  const startEdit = async (group) => {
+    try {
+      const athleteIds = await Grupos.getAthletesByGroup(group.id);
+
+      setEditingGroup(group);
+
+      setForm({
+        name: group.name || "",
+        sport: group.sport || "",
+        focus_skill: group.focus_skill || "",
+        description: group.description || group.notes || "",
+        athlete_ids: athleteIds || [],
+      });
+
+      setAthleteSearch("");
+      setShowForm(true);
+    } catch (e) {
+      console.error("Erro ao carregar atletas da turma:", e);
+      toast.error("Erro ao carregar os atletas da turma.");
+    }
+  };
+
+  // ==========================================================
+  // GUARDAR TURMA
+  // ==========================================================
+
+  const submit = async (e) => {
+    e.preventDefault();
+
+    if (!form.name.trim()) {
+      toast.error("Indica o nome da turma.");
+      return;
+    }
+
+    try {
+      if (editingGroup) {
+        await Grupos.update(editingGroup.id, form);
+        toast.success("Turma atualizada com sucesso!");
+      } else {
+        await Grupos.insert(form);
+        toast.success("Turma criada com sucesso!");
+      }
+
+      await refreshData();
+      resetForm();
+    } catch (e) {
+      console.error("ERRO AO GUARDAR TURMA:", e);
+
+      if (e?.message) {
+        toast.error(e.message);
+      } else {
+        toast.error("Erro ao guardar a turma.");
+      }
+    }
+  };
+
+  // ==========================================================
+  // ELIMINAR TURMA
+  // ==========================================================
+
+  const deleteGroup = (group) => {
+    setDeleteModal({
+      open: true,
+      groupId: group.id,
+      groupName: group.name,
+    });
+  };
+
+  const cancelDeleteGroup = () => {
+    setDeleteModal({
+      open: false,
+      groupId: null,
+      groupName: "",
+    });
+  };
+
+  const confirmDeleteGroup = async () => {
+    try {
+      // Verificação local (defesa extra, além do backend)
+      const atletasNoGrupo = athleteGroups.filter(
+        (ag) => String(ag.group_id) === String(deleteModal.groupId)
+      );
+
+      if (atletasNoGrupo.length > 0) {
+        toast.error(
+          "Não é possível eliminar a turma porque existem atletas associados."
+        );
+        cancelDeleteGroup();
+        return;
+      }
+
+      await Grupos.delete(deleteModal.groupId);
+
+      toast.success("Turma eliminada com sucesso!");
+
+      cancelDeleteGroup();
+      await refreshData();
+    } catch (e) {
+      console.error("Erro ao eliminar turma:", e);
+      toast.error(e?.message || "Erro ao eliminar turma.");
+    }
+  };
+
+  // ==========================================================
+  // ATLETAS DISPONÍVEIS
+  // ==========================================================
+
+  const availableAthletes = athletes.filter((athlete) => {
+    const athleteGroupsForAthlete = athleteGroups.filter(
+      (ag) => String(ag.athlete_id) === String(athlete.id)
+    );
+
+    // Sem turma → disponível
+    if (athleteGroupsForAthlete.length === 0) {
+      return true;
+    }
+
+    // A editar e já pertence a esta turma → disponível
+    if (editingGroup) {
+      const belongsToCurrentGroup = athleteGroupsForAthlete.some(
+        (ag) => String(ag.group_id) === String(editingGroup.id)
+      );
+      if (belongsToCurrentGroup) {
+        return true;
+      }
+    }
+
+    // Pertence a outra turma → indisponível
+    return false;
+  });
+
+  // ==========================================================
+  // PESQUISA DE ATLETAS
+  // ==========================================================
+
+  const normalizedSearch = athleteSearch.toLowerCase().trim();
+
+  const filteredAthletes = availableAthletes.filter((athlete) => {
+    if (!normalizedSearch) return true;
+
+    const name = athlete.name?.toLowerCase() || "";
+    const age =
+      athlete.age !== null && athlete.age !== undefined
+        ? String(athlete.age)
+        : "";
+
+    return name.includes(normalizedSearch) || age.includes(normalizedSearch);
+  });
+
+  // ==========================================================
+  // LOADING
+  // ==========================================================
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Carregando turmas...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto" />
+          <p className="mt-4 text-slate-600">A carregar turmas e atletas...</p>
         </div>
       </div>
     );
   }
 
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
   return (
     <div className="space-y-6" data-testid="groups-page">
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
+
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tighter">Turmas de atletas</h1>
-          <p className="text-slate-500 mt-1">Organiza turmas e equipas para facilitar o acompanhamento.</p>
+          <h1 className="font-display text-3xl font-bold tracking-tighter">
+            Turmas de atletas
+          </h1>
+          <p className="text-slate-500 mt-1">
+            Organiza turmas e associa os atletas existentes.
+          </p>
         </div>
+
         {!showForm && (
-          <button onClick={startNewGroup} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 btn-hover-orange transition" data-testid="add-group-btn">
-            <Plus className="w-4 h-4" /> Nova turma
+          <button
+            onClick={startNewGroup}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:bg-slate-800 btn-hover-orange transition"
+            data-testid="add-group-btn"
+          >
+            <Plus className="w-4 h-4" />
+            Nova turma
           </button>
         )}
       </div>
 
+      {/* =====================================================
+          MODAL: ELIMINAR TURMA
+      ====================================================== */}
+
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-slate-200 p-6">
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+                <Trash2 className="w-7 h-7" />
+              </div>
+            </div>
+
+            <h2 className="text-xl font-bold text-slate-900 text-center">
+              Eliminar turma?
+            </h2>
+
+            <p className="mt-3 text-sm text-slate-600 text-center leading-relaxed">
+              Tem a certeza de que pretende eliminar a turma{" "}
+              <span className="font-semibold text-slate-800">
+                "{deleteModal.groupName}"
+              </span>
+              ?
+            </p>
+
+            <p className="mt-3 text-xs text-slate-400 text-center">
+              Os atletas associados a esta turma deixarão de estar associados à
+              mesma.
+            </p>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={cancelDeleteGroup}
+                className="flex-1 px-4 py-2.5 rounded-full bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition"
+              >
+                Fechar
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteGroup}
+                className="flex-1 px-4 py-2.5 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          FORMULÁRIO
+      ====================================================== */}
+
       {showForm && (
-        <form onSubmit={submit} className="rounded-2xl bg-white border border-slate-200 p-6 space-y-5" data-testid="group-form">
+        <form
+          onSubmit={submit}
+          className="rounded-2xl bg-white border border-slate-200 p-6 space-y-5"
+          data-testid="group-form"
+        >
+          {/* HEADER DO FORM */}
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl font-bold">{editingGroup ? "Editar turma" : "Nova turma"}</h2>
-            <button type="button" onClick={resetForm} className="p-2 rounded-lg hover:bg-slate-100" data-testid="group-cancel">
+            <h2 className="font-display text-xl font-bold">
+              {editingGroup ? "Editar turma" : "Nova turma"}
+            </h2>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="p-2 rounded-lg hover:bg-slate-100"
+              data-testid="group-cancel"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
 
+          {/* =================================================
+              DADOS DA TURMA
+          ================================================== */}
+
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="md:col-span-1">
-              <label className="text-sm font-medium text-slate-700">Nome da turma</label>
-              <input required value={form.name} onChange={e=>setForm({...form, name: e.target.value})}
+            {/* NOME */}
+            <div>
+              <label className="text-sm font-medium text-slate-700">
+                Nome da turma
+              </label>
+              <input
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Sub-12 A · Turma 5ºB"
                 className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                data-testid="group-name" />
+                data-testid="group-name"
+              />
             </div>
+
+            {/* DESPORTO */}
             <div>
-              <label className="text-sm font-medium text-slate-700">Desporto</label>
-              <select value={form.sport} onChange={e=>setForm({...form, sport: e.target.value})}
-                className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white" data-testid="group-sport">
-                <option value="">— qualquer —</option>
-                {SPORTS.filter(s => s !== "todos").map(s => <option key={s} value={s} className="capitalize">{s}</option>)}
+              <label className="text-sm font-medium text-slate-700">
+                Desporto
+              </label>
+              <select
+                value={form.sport}
+                onChange={(e) => setForm({ ...form, sport: e.target.value })}
+                className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+                data-testid="group-sport"
+              >
+                <option value="">— Selecionar desporto —</option>
+                {SPORTS.filter((s) => s !== "todos").map((sport) => (
+                  <option key={sport} value={sport} className="capitalize">
+                    {sport}
+                  </option>
+                ))}
               </select>
+              <p className="text-xs text-slate-400 mt-1.5">
+                O desporto é definido pela turma.
+              </p>
             </div>
+
+            {/* SOFT SKILL */}
             <div>
-              <label className="text-sm font-medium text-slate-700">Soft skill foco</label>
-              <select value={form.focus_skill} onChange={e=>setForm({...form, focus_skill: e.target.value})}
-                className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white" data-testid="group-focus">
+              <label className="text-sm font-medium text-slate-700">
+                Soft skill foco
+              </label>
+              <select
+                value={form.focus_skill}
+                onChange={(e) =>
+                  setForm({ ...form, focus_skill: e.target.value })
+                }
+                className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white"
+                data-testid="group-focus"
+              >
                 <option value="">— nenhuma —</option>
-                {SOFT_SKILLS.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                {SOFT_SKILLS.map((skill) => (
+                  <option key={skill.id} value={skill.id}>
+                    {skill.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
+          {/* DESCRIÇÃO */}
           <div>
-            <label className="text-sm font-medium text-slate-700">Descrição (opcional)</label>
-            <textarea rows={2} value={form.description} onChange={e=>setForm({...form, description: e.target.value})}
-              className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200"
-              data-testid="group-description" />
+            <label className="text-sm font-medium text-slate-700">
+              Descrição{" "}
+              <span className="text-slate-400 font-normal">(opcional)</span>
+            </label>
+            <textarea
+              rows={2}
+              value={form.description}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
+              placeholder="Descrição ou objetivo desta turma..."
+              className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              data-testid="group-description"
+            />
           </div>
 
-          {/* Lista de atletas com checkboxes — estilo Avaliações */}
+          {/* =================================================
+              ATLETAS
+          ================================================== */}
+
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-1">
-              <div className="font-semibold text-slate-800 text-sm">Adicionar atletas à turma:</div>
-              <div className="text-xs text-slate-500">{form.athlete_ids.length} selecionado(s) · {athletes.length} disponíveis</div>
+            {/* CABEÇALHO */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+              <div>
+                <div className="font-semibold text-slate-800 text-sm">
+                  Adicionar atletas à turma
+                </div>
+                <div className="text-xs text-slate-500 mt-0.5">
+                  Escolha os atletas que pretende adicionar a esta turma.
+                </div>
+              </div>
+              <div className="text-xs text-slate-500">
+                <span className="font-semibold text-cyan-700">
+                  {form.athlete_ids.length}
+                </span>{" "}
+                selecionado(s) ·{" "}
+                <span className="font-semibold text-slate-700">
+                  {availableAthletes.length}
+                </span>{" "}
+                disponível(eis)
+              </div>
             </div>
-            {!form.sport ? (
-                <div className="text-sm text-slate-500 py-6 text-center">
-                  Seleciona primeiro o desporto da turma para veres os atletas disponíveis.
-                </div>
-              ) : availableAthletes.length === 0 ? (
-                <div className="text-sm text-slate-500 py-6 text-center">
-                  Não existem atletas disponíveis para este desporto.
-                </div>
-              ) : (
+
+            {/* PESQUISA */}
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={athleteSearch}
+                  onChange={(e) => setAthleteSearch(e.target.value)}
+                  placeholder="Pesquisar atleta pelo nome..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  data-testid="group-athlete-search"
+                />
+                {athleteSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setAthleteSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                    aria-label="Limpar pesquisa"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              {athleteSearch && (
+                <p className="text-xs text-slate-400 mt-1.5">
+                  {filteredAthletes.length} resultado(s)
+                </p>
+              )}
+            </div>
+
+            {/* LISTA */}
+            {athletes.length === 0 ? (
+              <div className="text-sm text-slate-500 py-8 text-center">
+                Ainda não existem atletas registados.
+              </div>
+            ) : availableAthletes.length === 0 ? (
+              <div className="rounded-xl bg-white border border-dashed border-slate-300 p-8 text-center">
+                <Users className="w-8 h-8 text-slate-300 mx-auto" />
+                <p className="mt-3 text-sm text-slate-600 font-medium">
+                  Não existem atletas disponíveis.
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  Os atletas que já pertencem a outra turma não podem ser
+                  adicionados aqui.
+                </p>
+              </div>
+            ) : filteredAthletes.length === 0 ? (
+              <div className="rounded-xl bg-white border border-dashed border-slate-300 p-8 text-center">
+                <Search className="w-8 h-8 text-slate-300 mx-auto" />
+                <p className="mt-3 text-sm text-slate-600 font-medium">
+                  Nenhum atleta encontrado.
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  Tenta pesquisar por outro nome.
+                </p>
+              </div>
+            ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-auto pr-1">
-                {availableAthletes.map(a => {
-                  const checked = form.athlete_ids.includes(a.id);
+                {filteredAthletes.map((athlete) => {
+                  const checked = form.athlete_ids.some(
+                    (id) => String(id) === String(athlete.id)
+                  );
+
                   return (
-                    <label key={a.id}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${
-                        checked ? "bg-cyan-50 border-cyan-300" : "bg-white border-slate-200 hover:border-slate-300"
+                    <label
+                      key={athlete.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        checked
+                          ? "bg-cyan-50 border-cyan-300 shadow-sm"
+                          : "bg-white border-slate-200 hover:border-cyan-200 hover:shadow-sm"
                       }`}
-                      data-testid={`group-athlete-${a.id}`}>
-                      <input type="checkbox" checked={checked} onChange={() => toggleAthlete(a.id)} className="w-4 h-4 accent-cyan-600" />
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm">
-                        {a.name[0]}
+                      data-testid={`group-athlete-${athlete.id}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleAthlete(athlete.id)}
+                        className="w-5 h-5 accent-cyan-600 cursor-pointer flex-shrink-0"
+                      />
+
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {athlete.name?.charAt(0)?.toUpperCase() || "?"}
                       </div>
+
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold truncate">{a.name}</div>
-                        <div className="text-xs text-slate-500 capitalize truncate">{a.sport} · {a.age} anos</div>
+                        <div className="text-sm font-semibold truncate text-slate-800">
+                          {athlete.name}
+                        </div>
+                        <div className="text-xs text-slate-500 truncate">
+                          {athlete.age ?? "—"} anos
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/menu/atletas/${a.id}`}
-                          state={{
-                            from: "/menu/turmas",
-                            groupId: editingGroup?.id
-                          }}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                      </div>
+
+                      {checked && (
+                        <Check className="w-4 h-4 text-cyan-600 flex-shrink-0" />
+                      )}
+
+                      <Link
+                        to={`/menu/atletas/${athlete.id}`}
+                        state={{
+                          from: "/menu/turmas",
+                          groupId: editingGroup?.id,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1 text-slate-400 hover:text-cyan-600 transition"
+                        title="Ver atleta"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
                     </label>
                   );
                 })}
@@ -372,14 +732,29 @@ export default function Groups() {
             )}
           </div>
 
-          <div className="flex justify-around md:justify-end gap-3">
-            <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold hover:bg-slate-200 transition-all">Cancelar</button>
-            <button type="submit" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold btn-hover-green transition" data-testid="group-save">
+          {/* BOTÕES */}
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="px-5 py-2.5 rounded-full bg-slate-100 font-semibold hover:bg-slate-200 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold transition"
+              data-testid="group-save"
+            >
               {editingGroup ? "Guardar" : "Criar turma"}
             </button>
           </div>
         </form>
       )}
+
+      {/* =====================================================
+          LISTA DE TURMAS
+      ====================================================== */}
 
       {groups.length === 0 && !showForm ? (
         <div className="rounded-2xl bg-white border border-dashed border-slate-300 p-12 text-center">
@@ -388,56 +763,106 @@ export default function Groups() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {groups.map(g => {
-            const sk = g.focus_skill ? SKILL_MAP[g.focus_skill] : null;
-            const groupAthletes = g.groupAthletes || [];
+          {groups.map((group) => {
+            const skill = group.focus_skill
+              ? SKILL_MAP[group.focus_skill]
+              : null;
+
+            const groupAthletes = group.groupAthletes || [];
+
             return (
-              <div key={g.id} className="rounded-2xl bg-white border border-slate-200 p-5 hover:-translate-y-0.5 transition" data-testid={`group-card-${g.id}`}>
+              <div
+                key={group.id}
+                className="rounded-2xl bg-white border border-slate-200 p-5 hover:-translate-y-0.5 hover:shadow-md transition"
+                data-testid={`group-card-${group.id}`}
+              >
+                {/* HEADER */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-display text-lg font-bold truncate">{g.name}</h3>
+                    <h3 className="font-display text-lg font-bold truncate">
+                      {group.name}
+                    </h3>
+
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                      {g.sport && <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{g.sport}</span>}
-                      {sk && <span className={`px-2 py-0.5 rounded-full font-bold ${sk.soft}`}>{sk.name}</span>}
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 font-semibold">{g.atletasCount} atletas</span>
+                      {group.sport && (
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">
+                          {group.sport}
+                        </span>
+                      )}
+                      {skill && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full font-bold ${skill.soft}`}
+                        >
+                          {skill.name}
+                        </span>
+                      )}
+                      <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 font-semibold">
+                        {group.atletasCount} atletas
+                      </span>
                     </div>
                   </div>
+
+                  {/* AÇÕES */}
                   <div className="flex items-center gap-1">
-                    <button onClick={() => startEdit(g)} className="p-2 text-slate-400 hover:text-cyan-600" data-testid={`edit-group-${g.id}`}><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => deleteGrupo(g.id)} className="p-2 text-slate-400 hover:text-red-500" data-testid={`delete-group-${g.id}`}><Trash2 className="w-4 h-4" /></button>
+                    <button
+                      onClick={() => startEdit(group)}
+                      className="p-2 text-slate-400 hover:text-cyan-600 transition"
+                      data-testid={`edit-group-${group.id}`}
+                      title="Editar turma"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteGroup(group)}
+                      className="p-2 text-slate-400 hover:text-red-500 transition"
+                      data-testid={`delete-group-${group.id}`}
+                      title="Eliminar turma"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
-                {g.description && <p className="mt-3 text-sm text-slate-600 line-clamp-2">{g.description}</p>}
+                {/* DESCRIÇÃO */}
+                {(group.description || group.notes) && (
+                  <p className="mt-3 text-sm text-slate-600 line-clamp-2">
+                    {group.description || group.notes}
+                  </p>
+                )}
 
+                {/* ATLETAS */}
                 {groupAthletes.length > 0 ? (
                   <div className="mt-4 flex items-center">
                     <div className="flex -space-x-2">
-                      {groupAthletes.slice(0, 5).map(a => (
+                      {groupAthletes.slice(0, 5).map((athlete) => (
                         <div
-                          key={a.id}
-                          title={a.name}
-                          className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 border-2 border-white flex items-center justify-center text-white font-bold text-xs"
+                          key={athlete.id}
+                          title={athlete.name}
+                          className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 border-2 border-white flex items-center justify-center text-white font-bold text-xs"
                         >
-                          {a.name[0]?.toUpperCase()}
+                          {athlete.name?.charAt(0)?.toUpperCase()}
                         </div>
                       ))}
                     </div>
-
                     {groupAthletes.length > 5 && (
                       <div className="ml-2 text-xs font-semibold text-slate-600">
                         +{groupAthletes.length - 5}
                       </div>
                     )}
                   </div>
-                  
                 ) : (
                   <p className="mt-4 text-xs text-slate-400 italic">
                     Sem atletas associados
                   </p>
                 )}
-                
-                <Link to={`/menu/turmas/${g.id}`} className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700">Ver Turma →</Link>
+
+                {/* LINK — CORRIGIDO: group.id em vez de g.id */}
+                <Link
+                  to={`/menu/turmas/${group.id}`}
+                  className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700"
+                >
+                  Ver Turma →
+                </Link>
               </div>
             );
           })}
