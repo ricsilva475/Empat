@@ -22,15 +22,19 @@ export default function AthleteDetail() {
     const load = async () => {
       const athleteData = await Atletas.getAtletaDetails(id);
       const avaliacoes = await Avaliacoes.getAvaliacoesByAtleta(id);
-      const grupoData = await Atletas.getGroupsByAthlete(id);
-      
+
+      // Obter a turma com todos os dados
+      const grupoData = await Atletas.getGroupsDetailsByAthlete(id);
+
       console.warn("Dados do atleta carregados:", avaliacoes);
       console.warn("Dados dos grupos carregados:", grupoData);
+
       setData(athleteData);
       setAvaliacoes(avaliacoes);
-      setGrupos(grupoData);
+      setGrupos(grupoData || []);
       setMedias30Dias(calcularMedias30Dias(avaliacoes));
     };
+
     load();
   }, [id]);
 
@@ -51,7 +55,8 @@ export default function AthleteDetail() {
       "empatia",
       "comunicacao",
       "resiliencia",
-      "lideranca"
+      "lideranca",
+      "frustracao"
     ];
 
     const medias = {};
@@ -121,13 +126,17 @@ export default function AthleteDetail() {
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-pink-400 flex items-center justify-center text-white font-bold text-3xl">{data.name[0]?.toUpperCase()}</div>
           <div className="flex-1">
             <h1 className="font-display text-3xl font-bold tracking-tighter">{data.name}</h1>
-            <div className="text-slate-500 capitalize mt-1">
-              {data.sport} · {data.age} anos
-              {data.position ? ` · ${data.position}` : ""}
-              {grupos.length > 0 ? ` · ${grupos[0].name}` : " · Sem turma"}
-            </div>
-
-            
+              <div className="text-slate-500 capitalize mt-1">
+                {grupos.length > 0
+                  ? grupos[0].sport || "Desporto não definido"
+                  : "Sem desporto"}
+                {" · "}
+                {data.age} anos
+                {data.position ? ` · ${data.position}` : ""}
+                {grupos.length > 0
+                  ? ` · ${grupos[0].name}`
+                  : " · Sem turma"}
+              </div>
           </div>
         </div>  
         <div className="flex sm:flex-row flex-col items-center justify-center xl:items-center xl:justify-end gap-3 xl:flex-1">

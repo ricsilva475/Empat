@@ -1,94 +1,106 @@
-import { supabase } from '../context/AuthContext';
+import { supabase } from "../context/AuthContext";
 
 const getUser = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return user;
 };
 
 export const Atletas = {
-  
+  // ============================================================
+  // OBTER TODOS OS ATLETAS ATIVOS
+  // ============================================================
   async getAllData() {
     const user = await getUser();
 
-    if (!user) throw new Error("Utilizador não autenticado")
+    if (!user) {
+      throw new Error("Utilizador não autenticado");
+    }
 
     const { data, error } = await supabase
-      .from('athletes')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('eliminated', false);
+      .from("athletes")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("eliminated", false)
+      .order("name", { ascending: true });
 
-    if (error) throw error
-    //console.log("Dados dos atletas:", data);
-    return data
+    if (error) throw error;
+
+    return data || [];
   },
 
+  // ============================================================
+  // CRIAR ATLETA
+  // ============================================================
   async insert(data) {
-    
     const user = await getUser();
 
-    if (!user) throw new Error("Utilizador não autenticado")
+    if (!user) {
+      throw new Error("Utilizador não autenticado");
+    }
 
     const { data: athlete, error } = await supabase
       .from("athletes")
       .insert({
         name: data.name,
         age: data.age,
-        sport: data.sport,
-        team: data.team,
         position: data.position,
         notes: data.notes,
         user_id: user.id,
+        eliminated: false,
       })
       .select()
       .single();
 
     if (error) throw error;
 
-    await this.syncGroups(athlete.id, data.group_ids || []);
-
-    if (data.group_id) {
-      const { error: groupError } = await supabase
-        .from("group_athletes")
-        .insert({
-          athlete_id: athlete.id,
-          group_id: data.group_id,
-          ativo: true,
-        });
-
-      if (groupError) throw groupError;
+    // Se forem fornecidas turmas, sincronizar
+    if (data.group_ids?.length) {
+      await this.syncGroups(athlete.id, data.group_ids);
     }
 
+    return athlete;
   },
 
+  // ============================================================
+  // OBTER DETALHES DE UM ATLETA
+  // ============================================================
   async getAtletaDetails(id) {
     const user = await getUser();
 
-    if (!user) throw new Error("Utilizador não autenticado")
-    const { data, error } = await supabase
-      .from('athletes')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single()
+    if (!user) {
+      throw new Error("Utilizador não autenticado");
+    }
 
-    if (error) throw error
-    //console.log("Dados do atleta:", data);
-    return data
+    const { data, error } = await supabase
+      .from("athletes")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (error) throw error;
+
+    return data;
   },
 
+  // ============================================================
+  // ATUALIZAR ATLETA
+  // ============================================================
   async update(id, data) {
     const user = await getUser();
 
-    if (!user) throw new Error("Utilizador não autenticado");
+    if (!user) {
+      throw new Error("Utilizador não autenticado");
+    }
 
     const { error } = await supabase
       .from("athletes")
       .update({
         name: data.name,
         age: data.age,
-        sport: data.sport,
-        team: data.team,
         position: data.position,
         notes: data.notes,
       })
@@ -97,99 +109,265 @@ export const Atletas = {
 
     if (error) throw error;
 
-    await this.syncGroups(id, data.group_ids || []);
-
+    // Apenas sincroniza grupos se forem fornecidos
+    if (Array.isArray(data.group_ids)) {
+      await this.syncGroups(id, data.group_ids);
+    }
   },
 
+  // ============================================================
+  // CONTAR ATLETAS
+  // ============================================================
   async getAtletasCount() {
     const { count, error } = await supabase
-      .from('athletes')
-      .select('*', { count: 'exact', head: true })
-      .not('eliminated', 'is', true)
+      .from("athletes")
+      .select("*", {
+        count: "exact",
+        head: true,
+      })
+      .eq("eliminated", false);
 
-    if (error) throw error
+    if (error) throw error;
 
-    return count ?? 0
+    return count ?? 0;
   },
 
+  // ============================================================
+  // ELIMINAR ATLETA
+  // ============================================================
   async delete(id) {
-    
     const user = await getUser();
 
-    if (!user) throw new Error("Utilizador não autenticado")
+    if (!user) {
+      throw new Error("Utilizador não autenticado");
+    }
 
-    //eliminar atletas
+    // Eliminar logicamente o atleta
     const { error } = await supabase
-      .from('athletes')
-      .update({ eliminated: true })
-      .eq('id', id)
-      .eq('user_id', user.id);
+      .from("athletes")
+      .update({
+        eliminated: true,
+      })
+      .eq("id", id)
+      .eq("user_id", user.id);
 
-    if (error) throw error
+    if (error) throw error;
 
-    //desativar atletas nos grupo atletas
+    // Desativar atleta nas turmas
     const { error: groupError } = await supabase
-      .from('group_athletes')
-      .update({ ativo: false })
-      .eq('athlete_id', id);
+      .from("group_athletes")
+      .update({
+        ativo: false,
+      })
+      .eq("athlete_id", id);
 
     if (groupError) throw groupError;
 
-    //Eliminar avaliações do atleta
+    // Eliminar logicamente as avaliações
     const { error: avaliacaoError } = await supabase
-      .from('avaliacoes')
-      .update({ eliminated: true })
-      .eq('athlete_id', id)
-      .eq('user_id', user.id);
+      .from("avaliacoes")
+      .update({
+        eliminated: true,
+      })
+      .eq("athlete_id", id)
+      .eq("user_id", user.id);
 
     if (avaliacaoError) throw avaliacaoError;
   },
-  async syncGroups(athleteId, groupIds) {
-  
-      const { data: existing, error } = await supabase
-        .from("group_athletes")
-        .select("group_id, ativo")
-        .eq("athlete_id", athleteId);
-  
-      if (error) throw error;
-  
-      const existingIds = existing.map(g => g.group_id);
-  
-      const toDeactivate = existingIds.filter(id => !groupIds.includes(id));
-  
-      const toActivate = groupIds.filter(id => existingIds.includes(id));
-  
-      const toInsert = groupIds.filter(id => !existingIds.includes(id));
-  
-      if (toDeactivate.length) {
-        await supabase
-          .from("group_athletes")
-          .update({ ativo: false })
-          .eq("athlete_id", athleteId)
-          .in("group_id", toDeactivate);
-      }
-  
-      if (toActivate.length) {
-        await supabase
-          .from("group_athletes")
-          .update({ ativo: true })
-          .eq("athlete_id", athleteId)
-          .in("group_id", toActivate);
-      }
-  
-      if (toInsert.length) {
-        await supabase
-          .from("group_athletes")
-          .insert(
-            toInsert.map(groupId => ({
-              athlete_id: athleteId,
-              group_id: groupId,
-              ativo: true
-            }))
-          );
-      }
-    },
 
+  // ============================================================
+  // OBTER TURMA ATUAL DO ATLETA
+  // ============================================================
+  async getCurrentGroup(athleteId) {
+    const { data, error } = await supabase
+      .from("group_athletes")
+      .select(`
+        group_id,
+        ativo,
+        groups (
+          id,
+          name,
+          sport
+        )
+      `)
+      .eq("athlete_id", athleteId)
+      .eq("ativo", true)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    return data?.groups || null;
+  },
+
+  // ============================================================
+  // SINCRONIZAR TURMA DO ATLETA
+  // ============================================================
+  async syncGroups(athleteId, groupIds) {
+    if (!Array.isArray(groupIds)) {
+      groupIds = [];
+    }
+
+    // Um atleta só pode ter uma turma
+    if (groupIds.length > 1) {
+      throw new Error(
+        "Um atleta só pode estar associado a uma turma."
+      );
+    }
+
+    // ==========================================================
+    // OBTER RELAÇÕES EXISTENTES
+    // ==========================================================
+
+    const { data: existing, error } = await supabase
+      .from("group_athletes")
+      .select(`
+        group_id,
+        ativo,
+        groups (
+          id,
+          name,
+          sport
+        )
+      `)
+      .eq("athlete_id", athleteId);
+
+    if (error) throw error;
+
+    const activeGroup = (existing || []).find(
+      (group) => group.ativo === true
+    );
+
+    const newGroupId =
+      groupIds.length > 0
+        ? groupIds[0]
+        : null;
+
+
+    // ==========================================================
+    // REMOVER O ATLETA DA TURMA
+    // ==========================================================
+
+    if (!newGroupId) {
+
+      if (!activeGroup) {
+        return;
+      }
+
+      const { error: deactivateError } =
+        await supabase
+          .from("group_athletes")
+          .update({
+            ativo: false,
+          })
+          .eq("athlete_id", athleteId)
+          .eq("ativo", true);
+
+      if (deactivateError) {
+        throw deactivateError;
+      }
+
+      return;
+    }
+
+
+    // ==========================================================
+    // JÁ ESTÁ NA TURMA SELECIONADA
+    // ==========================================================
+
+    if (
+      activeGroup &&
+      String(activeGroup.group_id) ===
+        String(newGroupId)
+    ) {
+      return;
+    }
+
+
+    // ==========================================================
+    // DESATIVAR TURMA ATUAL
+    // ==========================================================
+
+    if (activeGroup) {
+
+      const { error: deactivateError } =
+        await supabase
+          .from("group_athletes")
+          .update({
+            ativo: false,
+          })
+          .eq("athlete_id", athleteId)
+          .eq("ativo", true);
+
+      if (deactivateError) {
+        throw deactivateError;
+      }
+    }
+
+
+    // ==========================================================
+    // VERIFICAR SE JÁ EXISTE RELAÇÃO COM A NOVA TURMA
+    // ==========================================================
+
+    const existingRelation =
+      (existing || []).find(
+        (group) =>
+          String(group.group_id) ===
+          String(newGroupId)
+      );
+
+
+    // ==========================================================
+    // REATIVAR RELAÇÃO EXISTENTE
+    // ==========================================================
+
+    if (existingRelation) {
+
+      const { error: reactivateError } =
+        await supabase
+          .from("group_athletes")
+          .update({
+            ativo: true,
+          })
+          .eq("athlete_id", athleteId)
+          .eq("group_id", newGroupId);
+
+      if (reactivateError) {
+        throw reactivateError;
+      }
+
+      return;
+    }
+
+
+    // ==========================================================
+    // CRIAR NOVA RELAÇÃO
+    // ==========================================================
+
+    const { error: insertError } =
+      await supabase
+        .from("group_athletes")
+        .insert({
+          athlete_id: athleteId,
+          group_id: newGroupId,
+          ativo: true,
+        });
+
+    if (insertError) {
+
+      // Violação de constraint/índice único
+      if (insertError.code === "23505") {
+        throw new Error(
+          "Este atleta já está associado a esta turma."
+        );
+      }
+
+      throw insertError;
+    }
+  },
+
+  // ============================================================
+  // OBTER IDs DAS TURMAS DO ATLETA
+  // ============================================================
   async getGroupsByAthlete(athleteId) {
     const { data, error } = await supabase
       .from("group_athletes")
@@ -199,14 +377,18 @@ export const Atletas = {
 
     if (error) throw error;
 
-    return data.map(g => g.group_id);
+    return (data || []).map((g) => g.group_id);
   },
 
-  async getGroupsByAthlete(athleteId) {
+  // ============================================================
+  // OBTER TURMA DO ATLETA COM DETALHES
+  // ============================================================
+  async getGroupsDetailsByAthlete(athleteId) {
     const { data, error } = await supabase
       .from("group_athletes")
       .select(`
         group_id,
+        ativo,
         groups (
           id,
           name,
@@ -218,12 +400,6 @@ export const Atletas = {
 
     if (error) throw error;
 
-    return data.map(item => item.groups);
+    return (data || []).map((item) => item.groups);
   },
-
-  
-
-}
-
-
-
+};
