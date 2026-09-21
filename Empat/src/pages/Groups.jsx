@@ -16,19 +16,6 @@ import { Grupos } from "../js/groups";
 import { toast } from "react-toastify";
 
 // ============================================================
-// CACHE
-// ============================================================
-
-const CACHE_KEYS = {
-  GROUPS: "cache_groups_v2",
-  ATHLETES: "cache_groups_athletes_v2",
-  ATHLETE_GROUPS: "cache_groups_athlete_groups_v2",
-  TIMESTAMP: "cache_groups_timestamp_v2",
-};
-
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
-
-// ============================================================
 // COMPONENT
 // ============================================================
 
@@ -59,56 +46,7 @@ export default function Groups() {
   const [athleteSearch, setAthleteSearch] = useState("");
 
   // ==========================================================
-  // CACHE
-  // ==========================================================
-
-  const isCacheValid = useCallback(() => {
-    const timestamp = localStorage.getItem(CACHE_KEYS.TIMESTAMP);
-    if (!timestamp) return false;
-    const elapsed = Date.now() - parseInt(timestamp, 10);
-    return elapsed < CACHE_DURATION;
-  }, []);
-
-  const loadFromCache = useCallback(() => {
-    try {
-      const cachedGroups = localStorage.getItem(CACHE_KEYS.GROUPS);
-      const cachedAthletes = localStorage.getItem(CACHE_KEYS.ATHLETES);
-      const cachedAthleteGroups = localStorage.getItem(
-        CACHE_KEYS.ATHLETE_GROUPS
-      );
-
-      if (cachedGroups && cachedAthletes && cachedAthleteGroups) {
-        setGroups(JSON.parse(cachedGroups));
-        setAthletes(JSON.parse(cachedAthletes));
-        setAthleteGroups(JSON.parse(cachedAthleteGroups));
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.error("Erro ao carregar cache:", e);
-      return false;
-    }
-  }, []);
-
-  const saveToCache = useCallback(
-    (groupsData, athletesData, athleteGroupsData) => {
-      try {
-        localStorage.setItem(CACHE_KEYS.GROUPS, JSON.stringify(groupsData));
-        localStorage.setItem(CACHE_KEYS.ATHLETES, JSON.stringify(athletesData));
-        localStorage.setItem(
-          CACHE_KEYS.ATHLETE_GROUPS,
-          JSON.stringify(athleteGroupsData)
-        );
-        localStorage.setItem(CACHE_KEYS.TIMESTAMP, Date.now().toString());
-      } catch (e) {
-        console.error("Erro ao guardar cache:", e);
-      }
-    },
-    []
-  );
-
-  // ==========================================================
-  // CARREGAR DADOS (FORÇA REFRESH)
+  // CARREGAR DADOS (SEMPRE DO SERVIDOR)
   // ==========================================================
 
   const refreshData = useCallback(async () => {
@@ -149,35 +87,18 @@ export default function Groups() {
       setAthletes(athletesData);
       setAthleteGroups(athleteGroupsData);
       setGroups(groupsWithAthletes);
-
-      // Cache
-      saveToCache(groupsWithAthletes, athletesData, athleteGroupsData);
     } catch (e) {
       console.error("Erro ao carregar dados das turmas:", e);
       toast.error("Erro ao carregar atletas e turmas.");
     } finally {
       setLoading(false);
     }
-  }, [saveToCache]);
+  }, []);
 
-  // ==========================================================
-  // CARREGAMENTO INICIAL (CACHE OU SERVIDOR)
-  // ==========================================================
-
-  const loadAllData = useCallback(async () => {
-    if (isCacheValid()) {
-      const loaded = loadFromCache();
-      if (loaded) {
-        setLoading(false);
-        return;
-      }
-    }
-    await refreshData();
-  }, [isCacheValid, loadFromCache, refreshData]);
-
+  // Carregamento inicial
   useEffect(() => {
-    loadAllData();
-  }, [loadAllData]);
+    refreshData();
+  }, [refreshData]);
 
   // ==========================================================
   // RESET
@@ -312,7 +233,6 @@ export default function Groups() {
 
   const confirmDeleteGroup = async () => {
     try {
-      // Verificação local (defesa extra, além do backend)
       const atletasNoGrupo = athleteGroups.filter(
         (ag) => String(ag.group_id) === String(deleteModal.groupId)
       );
@@ -346,12 +266,10 @@ export default function Groups() {
       (ag) => String(ag.athlete_id) === String(athlete.id)
     );
 
-    // Sem turma → disponível
     if (athleteGroupsForAthlete.length === 0) {
       return true;
     }
 
-    // A editar e já pertence a esta turma → disponível
     if (editingGroup) {
       const belongsToCurrentGroup = athleteGroupsForAthlete.some(
         (ag) => String(ag.group_id) === String(editingGroup.id)
@@ -361,7 +279,6 @@ export default function Groups() {
       }
     }
 
-    // Pertence a outra turma → indisponível
     return false;
   });
 
@@ -404,10 +321,7 @@ export default function Groups() {
 
   return (
     <div className="space-y-6" data-testid="groups-page">
-      {/* =====================================================
-          HEADER
-      ====================================================== */}
-
+      {/* HEADER */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tighter">
@@ -430,10 +344,7 @@ export default function Groups() {
         )}
       </div>
 
-      {/* =====================================================
-          MODAL: ELIMINAR TURMA
-      ====================================================== */}
-
+      {/* MODAL: ELIMINAR TURMA */}
       {deleteModal.open && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
           <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-slate-200 p-6">
@@ -480,17 +391,13 @@ export default function Groups() {
         </div>
       )}
 
-      {/* =====================================================
-          FORMULÁRIO
-      ====================================================== */}
-
+      {/* FORMULÁRIO */}
       {showForm && (
         <form
           onSubmit={submit}
           className="rounded-2xl bg-white border border-slate-200 p-6 space-y-5"
           data-testid="group-form"
         >
-          {/* HEADER DO FORM */}
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl font-bold">
               {editingGroup ? "Editar turma" : "Nova turma"}
@@ -505,12 +412,8 @@ export default function Groups() {
             </button>
           </div>
 
-          {/* =================================================
-              DADOS DA TURMA
-          ================================================== */}
-
+          {/* DADOS DA TURMA */}
           <div className="grid md:grid-cols-3 gap-4">
-            {/* NOME */}
             <div>
               <label className="text-sm font-medium text-slate-700">
                 Nome da turma
@@ -525,7 +428,6 @@ export default function Groups() {
               />
             </div>
 
-            {/* DESPORTO */}
             <div>
               <label className="text-sm font-medium text-slate-700">
                 Desporto
@@ -548,7 +450,6 @@ export default function Groups() {
               </p>
             </div>
 
-            {/* SOFT SKILL */}
             <div>
               <label className="text-sm font-medium text-slate-700">
                 Soft skill foco
@@ -589,12 +490,8 @@ export default function Groups() {
             />
           </div>
 
-          {/* =================================================
-              ATLETAS
-          ================================================== */}
-
+          {/* ATLETAS */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            {/* CABEÇALHO */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
               <div>
                 <div className="font-semibold text-slate-800 text-sm">
@@ -752,10 +649,7 @@ export default function Groups() {
         </form>
       )}
 
-      {/* =====================================================
-          LISTA DE TURMAS
-      ====================================================== */}
-
+      {/* LISTA DE TURMAS */}
       {groups.length === 0 && !showForm ? (
         <div className="rounded-2xl bg-white border border-dashed border-slate-300 p-12 text-center">
           <Users className="w-10 h-10 text-slate-400 mx-auto" />
@@ -776,7 +670,6 @@ export default function Groups() {
                 className="rounded-2xl bg-white border border-slate-200 p-5 hover:-translate-y-0.5 hover:shadow-md transition"
                 data-testid={`group-card-${group.id}`}
               >
-                {/* HEADER */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="font-display text-lg font-bold truncate">
@@ -802,7 +695,6 @@ export default function Groups() {
                     </div>
                   </div>
 
-                  {/* AÇÕES */}
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => startEdit(group)}
@@ -823,14 +715,12 @@ export default function Groups() {
                   </div>
                 </div>
 
-                {/* DESCRIÇÃO */}
                 {(group.description || group.notes) && (
                   <p className="mt-3 text-sm text-slate-600 line-clamp-2">
                     {group.description || group.notes}
                   </p>
                 )}
 
-                {/* ATLETAS */}
                 {groupAthletes.length > 0 ? (
                   <div className="mt-4 flex items-center">
                     <div className="flex -space-x-2">
@@ -856,7 +746,6 @@ export default function Groups() {
                   </p>
                 )}
 
-                {/* LINK — CORRIGIDO: group.id em vez de g.id */}
                 <Link
                   to={`/menu/turmas/${group.id}`}
                   className="block mt-4 text-center text-sm font-semibold text-cyan-600 hover:text-cyan-700"

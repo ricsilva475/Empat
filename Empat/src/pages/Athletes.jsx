@@ -12,6 +12,21 @@ import { SKILL_MAP } from "../js/constants";
 // CACHE
 // ============================================================
 
+// No topo do Athletes.jsx, junto às CACHE_KEYS
+const GROUPS_CACHE_KEYS = {
+  GROUPS: "cache_groups_v2",
+  ATHLETES: "cache_groups_athletes_v2",
+  ATHLETE_GROUPS: "cache_groups_athlete_groups_v2",
+  TIMESTAMP: "cache_groups_timestamp_v2",
+};
+
+// Função helper
+const invalidateGroupsCache = () => {
+  Object.values(GROUPS_CACHE_KEYS).forEach((key) => {
+    localStorage.removeItem(key);
+  });
+};
+
 const CACHE_KEYS = {
   ATHLETES: "cache_athletes_list_v2",
   ATHLETES_NUM: "cache_athletes_num_v2",
